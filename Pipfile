@@ -8,6 +8,10 @@ sudachipy = "*"
 sudachidict-core = "*"
 invoke = "*"
 ruff = "*"
+torch = "*"
+transformers = "*"
+sentencepiece = "*"
+protobuf = "*"
 
 [dev-packages]
 
