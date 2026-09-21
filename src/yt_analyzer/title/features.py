@@ -1,7 +1,7 @@
 # src/yt_analyzer/title/features.py
 
-import re
 import math
+import re
 
 from .tokenizer import Token
 
