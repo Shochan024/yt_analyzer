@@ -3,12 +3,17 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 name = "pypi"
 
+[[source]]
+url = "https://download.pytorch.org/whl/cpu"
+verify_ssl = true
+name = "pytorch-cpu"
+
 [packages]
 sudachipy = "*"
 sudachidict-core = "*"
 invoke = "*"
 ruff = "*"
-torch = "*"
+torch = {version = "*", index = "pytorch-cpu"}
 transformers = "*"
 sentencepiece = "*"
 protobuf = "*"
