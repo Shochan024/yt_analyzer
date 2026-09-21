@@ -1,16 +1,23 @@
 # src/yt_analyzer/title/features.py
 
-import re
 import math
+import re
 
 from .tokenizer import Token
 
 
 class TitleFeatures:
-  def __init__(self, title: str, tokens: list[Token], word_frequencies: dict[str, int] | None = None) -> None:
+  def __init__(
+      self,
+      title: str,
+      tokens: list[Token],
+      word_frequencies: dict[str, int] | None = None,
+      mean_contextual_surprisal: float | None = None
+    ) -> None:
     self.title = title
     self.tokens = tokens
     self.word_frequencies = word_frequencies
+    self._mean_contextual_surprisal = mean_contextual_surprisal
 
   @property
   def length(self) -> int:
@@ -66,8 +73,7 @@ class TitleFeatures:
     return len(re.findall(r"\d+", self.title))
 
   @property
-  def lexical_rarity(self) -> float:
-    # lexical_rarity: 語彙の希少性
+  def unigram_cross_entropy(self) -> float:
     if not self.words or not self.word_frequencies:
       return 0.0
 
@@ -86,3 +92,7 @@ class TitleFeatures:
       scores.append(-math.log(probability))
 
     return sum(scores) / len(scores)
+
+  @property
+  def mean_contextual_surprisal(self) -> float:
+    return self._mean_contextual_surprisal or 0.0
