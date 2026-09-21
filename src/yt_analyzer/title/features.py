@@ -66,8 +66,7 @@ class TitleFeatures:
     return len(re.findall(r"\d+", self.title))
 
   @property
-  def lexical_rarity(self) -> float:
-    # lexical_rarity: 語彙の希少性
+  def unigram_cross_entropy(self) -> float:
     if not self.words or not self.word_frequencies:
       return 0.0
 
