@@ -151,6 +151,20 @@ class ChannelReportRenderer:
     th { text-align: left; color: var(--muted); font-size: 11px; padding: 0 10px 8px 0; }
     td { border-top: 1px solid var(--border); padding: 11px 10px 11px 0; vertical-align: top; }
     .video-button { border: 0; padding: 0; background: transparent; color: var(--text); cursor: pointer; text-align: left; font-weight: 650; }
+    .feature-table-card { margin-top: 16px; }
+    .sort-button {
+      border: 0;
+      padding: 0;
+      background: transparent;
+      color: inherit;
+      cursor: pointer;
+      font: inherit;
+      text-align: left;
+    }
+    .sort-button::after { content: " ↕"; color: var(--muted); }
+    .sort-button.active.asc::after { content: " ↑"; }
+    .sort-button.active.desc::after { content: " ↓"; }
+    .info { cursor: help; text-decoration: underline dotted; text-underline-offset: 3px; }
     .empty { padding: 28px 0; color: var(--muted); text-align: center; }
     .note { margin-top: 16px; font-size: 12px; color: var(--muted); }
     @media (max-width: 820px) {
@@ -232,6 +246,27 @@ class ChannelReportRenderer:
       </div>
     </section>
 
+    <section class="card feature-table-card">
+      <h2>タイトル特徴量一覧</h2>
+      <div class="muted">各動画のタイトル特徴量です。列名をクリックすると並べ替えできます。</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th><button type="button" class="sort-button" data-feature-sort="title">動画</button></th>
+              <th><button type="button" class="sort-button" data-feature-sort="length">タイトル長</button></th>
+              <th><button type="button" class="sort-button" data-feature-sort="word_count">単語数</button></th>
+              <th><button type="button" class="sort-button info" data-feature-sort="mean_contextual_surprisal" title="前後の文脈から見て、その表現がどれくらい予測しにくいかを表します。高いほど意外性が高い傾向です。">文脈 surprisal</button></th>
+              <th><button type="button" class="sort-button info" data-feature-sort="proper_noun_ratio" title="タイトル内の語のうち固有名詞が占める割合です。">固有名詞率</button></th>
+              <th><button type="button" class="sort-button" data-feature-sort="number_count">数字数</button></th>
+              <th><button type="button" class="sort-button info" data-feature-sort="unigram_cross_entropy" title="単語単体の出現しにくさを平均した指標です。高いほど珍しい語を含む傾向です。">Unigram entropy</button></th>
+            </tr>
+          </thead>
+          <tbody id="feature-table"></tbody>
+        </table>
+      </div>
+    </section>
+
     <div class="note">数値が未取得または分析不能の場合は「—」と表示します。</div>
   </main>
 
@@ -261,6 +296,10 @@ class ChannelReportRenderer:
 
       let mode = report.videos.some(v => v.video_type === "long") ? "long" : "short";
       let selectedVideo = null;
+      let featureSort = {
+        key: "title",
+        direction: "asc"
+      };
 
       const byId = id => document.getElementById(id);
       const fmt = (value, digits = 2) => {
@@ -496,6 +535,67 @@ class ChannelReportRenderer:
         });
       }
 
+      function renderFeatureTable() {
+        const rows = [...videos()];
+        const key = featureSort.key;
+        const direction = featureSort.direction === "asc" ? 1 : -1;
+
+        rows.sort((left, right) => {
+          if (key === "title") {
+            return left.title.localeCompare(
+              right.title,
+              "ja"
+            ) * direction;
+          }
+
+          const leftValue = left.features[key];
+          const rightValue = right.features[key];
+
+          if (leftValue === null && rightValue === null) return 0;
+          if (leftValue === null) return 1;
+          if (rightValue === null) return -1;
+
+          return (Number(leftValue) - Number(rightValue)) * direction;
+        });
+
+        byId("feature-table").innerHTML = rows.map(video => `<tr>
+          <td><button type="button" class="video-button feature-video-button" data-video-id="${escapeHtml(video.video_id)}">${escapeHtml(video.title)}</button></td>
+          <td>${fmt(video.features.length, 0)}</td>
+          <td>${fmt(video.features.word_count, 0)}</td>
+          <td>${fmt(video.features.mean_contextual_surprisal, 3)}</td>
+          <td>${video.features.proper_noun_ratio === null ? "—" : pct(video.features.proper_noun_ratio)}</td>
+          <td>${fmt(video.features.number_count, 0)}</td>
+          <td>${fmt(video.features.unigram_cross_entropy, 3)}</td>
+        </tr>`).join("");
+
+        document.querySelectorAll(".feature-video-button").forEach(button => {
+          button.addEventListener("click", () => {
+            const video = report.videos.find(
+              item => item.video_id === button.dataset.videoId
+            );
+
+            if (video) selectVideo(video);
+          });
+        });
+
+        document.querySelectorAll("[data-feature-sort]").forEach(button => {
+          button.classList.toggle(
+            "active",
+            button.dataset.featureSort === featureSort.key
+          );
+          button.classList.toggle(
+            "asc",
+            button.dataset.featureSort === featureSort.key
+              && featureSort.direction === "asc"
+          );
+          button.classList.toggle(
+            "desc",
+            button.dataset.featureSort === featureSort.key
+              && featureSort.direction === "desc"
+          );
+        });
+      }
+
       function selectVideo(video) {
         selectedVideo = video;
         byId("detail-title").textContent = video.title;
@@ -533,6 +633,7 @@ class ChannelReportRenderer:
         renderScatter();
         renderBars();
         renderTable();
+        renderFeatureTable();
 
         const candidates = videos();
         if (!selectedVideo || selectedVideo.video_type !== mode) {
@@ -558,6 +659,24 @@ class ChannelReportRenderer:
         renderBars();
         renderTable();
         if (selectedVideo) selectVideo(selectedVideo);
+      });
+      document.querySelectorAll("[data-feature-sort]").forEach(button => {
+        button.addEventListener("click", () => {
+          const key = button.dataset.featureSort;
+
+          if (featureSort.key === key) {
+            featureSort.direction = featureSort.direction === "asc"
+              ? "desc"
+              : "asc";
+          } else {
+            featureSort = {
+              key,
+              direction: "asc"
+            };
+          }
+
+          renderFeatureTable();
+        });
       });
 
       renderAll();
