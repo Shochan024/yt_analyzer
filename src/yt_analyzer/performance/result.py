@@ -5,8 +5,10 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class ReaccelerationPoint:
-  day: int
-  views: int
+  start_day: int
+  start_views: int
+  peak_strength_day: int
+  peak_strength_views: int
   slope_before: float
   slope_after: float
   strength: float
@@ -51,6 +53,7 @@ class PerformanceResult:
   reacceleration_count: int = 0
   primary_reacceleration_day: int | None = None
   primary_reacceleration_views: int | None = None
+  primary_reacceleration_peak_strength_day: int | None = None
   primary_reacceleration_strength: float | None = None
 
 
