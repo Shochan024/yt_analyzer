@@ -56,8 +56,10 @@ class ReportDataBuilderTest(unittest.TestCase):
               "video_id": "long-1",
               "reacceleration_points": [
                 {
-                  "day": 12,
-                  "views": 20,
+                  "start_day": 11,
+                  "start_views": 16,
+                  "peak_strength_day": 12,
+                  "peak_strength_views": 20,
                   "slope_before": -1.0,
                   "slope_after": 3.0,
                   "strength": 4.0
@@ -98,7 +100,11 @@ class ReportDataBuilderTest(unittest.TestCase):
       300
     )
     self.assertEqual(
-      data["videos"][0]["reacceleration_points"][0]["day"],
+      data["videos"][0]["reacceleration_points"][0]["start_day"],
+      11
+    )
+    self.assertEqual(
+      data["videos"][0]["reacceleration_points"][0]["peak_strength_day"],
       12
     )
     self.assertIsNone(
