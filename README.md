@@ -670,17 +670,25 @@ initial breakpoint後に日次視聴回数が再び持続的に増加する場�
 
 という流れを利用します。
 
-各再加速点は、
+各再加速イベントは、
 
 ```text
-day
-views
+start_day
+start_views
+peak_strength_day
+peak_strength_views
 slope_before
 slope_after
 strength
 ```
 
 を持ちます。
+
+`start_day` は再加速イベントとして成立した最初の日です。
+`peak_strength_day` は、そのイベント内で傾き変化が最大になった日です。
+
+`slope_before` / `slope_after` / `strength` は
+`peak_strength_day` 時点の局所回帰から算出します。
 
 `strength` は、
 
@@ -703,6 +711,7 @@ slope_{before}
 reacceleration_count
 primary_reacceleration_day
 primary_reacceleration_views
+primary_reacceleration_peak_strength_day
 primary_reacceleration_strength
 ```
 
