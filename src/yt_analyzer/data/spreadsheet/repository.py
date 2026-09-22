@@ -35,9 +35,14 @@ class SpreadsheetAnalysisDataRepository(AnalysisDataRepository):
         record
       )
       for record in records
-      if str(
-        record.get("video_id", "")
-      ) == video_id
+      if (
+        str(
+          record.get("video_id", "")
+        ) == video_id
+        and not self._blank(
+          record.get("elapsed_day")
+        )
+      )
     ]
 
     return sorted(
