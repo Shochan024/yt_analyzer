@@ -67,15 +67,19 @@ class ReaccelerationJsonWriterTest(unittest.TestCase):
   def test_write_serializes_multiple_points(self):
     points = (
       ReaccelerationPoint(
-        day=12,
-        views=20,
+        start_day=11,
+        start_views=16,
+        peak_strength_day=12,
+        peak_strength_views=20,
         slope_before=-1.0,
         slope_after=3.0,
         strength=4.0
       ),
       ReaccelerationPoint(
-        day=24,
-        views=40,
+        start_day=24,
+        start_views=40,
+        peak_strength_day=26,
+        peak_strength_views=55,
         slope_before=0.0,
         slope_after=6.0,
         strength=6.0
@@ -96,8 +100,12 @@ class ReaccelerationJsonWriterTest(unittest.TestCase):
 
     self.assertEqual(rows[0]["video_id"], "video-1")
     self.assertEqual(
-      [point["day"] for point in rows[0]["reacceleration_points"]],
-      [12, 24]
+      [point["start_day"] for point in rows[0]["reacceleration_points"]],
+      [11, 24]
+    )
+    self.assertEqual(
+      [point["peak_strength_day"] for point in rows[0]["reacceleration_points"]],
+      [12, 26]
     )
 
   def test_upsert_replaces_only_target_video(self):
@@ -116,8 +124,10 @@ class ReaccelerationJsonWriterTest(unittest.TestCase):
           "video-1",
           (
             ReaccelerationPoint(
-              day=10,
-              views=20,
+              start_day=10,
+              start_views=20,
+              peak_strength_day=12,
+              peak_strength_views=30,
               slope_before=0.0,
               slope_after=2.0,
               strength=2.0
@@ -136,7 +146,7 @@ class ReaccelerationJsonWriterTest(unittest.TestCase):
 
     self.assertEqual(len(rows), 2)
     self.assertEqual(
-      by_video_id["video-1"]["reacceleration_points"][0]["day"],
+      by_video_id["video-1"]["reacceleration_points"][0]["start_day"],
       10
     )
     self.assertEqual(
