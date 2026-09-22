@@ -3,13 +3,13 @@
 from invoke import Collection, task
 
 from src.yt_analyzer.application.performance_metrics_command import (
-  run_performance_metrics
+  run_performance_metrics,
 )
 from src.yt_analyzer.application.pipeline_command import run_all_pipeline
 from src.yt_analyzer.application.report_command import run_channel_report
 from src.yt_analyzer.application.statistics_command import (
   run_long_statistics,
-  run_short_statistics
+  run_short_statistics,
 )
 from src.yt_analyzer.application.title_features_command import run_title_features
 
