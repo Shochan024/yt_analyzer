@@ -42,7 +42,8 @@ class ReportDataBuilder:
     title_features_path: Path,
     performance_path: Path,
     long_analysis_path: Path,
-    short_analysis_path: Path
+    short_analysis_path: Path,
+    daily_metrics: dict[str, list[dict[str, int]]] | None = None
   ) -> dict[str, object]:
     title_rows = self._read_csv(title_features_path)
     performance_rows = {
@@ -53,7 +54,8 @@ class ReportDataBuilder:
     videos = [
       self._video(
         row,
-        performance_rows.get(row["video_id"])
+        performance_rows.get(row["video_id"]),
+        (daily_metrics or {}).get(row["video_id"], [])
       )
       for row in title_rows
     ]
@@ -73,7 +75,8 @@ class ReportDataBuilder:
   def _video(
     self,
     row: dict[str, str],
-    performance: dict[str, str] | None
+    performance: dict[str, str] | None,
+    daily_metrics: list[dict[str, int]]
   ) -> dict[str, object]:
     return {
       "video_id": row["video_id"],
@@ -96,7 +99,8 @@ class ReportDataBuilder:
         if performance is not None
         else None
         for name in self.PERFORMANCE_FIELDS
-      }
+      },
+      "daily_metrics": daily_metrics
     }
 
   def _long_kpis(
