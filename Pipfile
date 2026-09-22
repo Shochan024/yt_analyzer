@@ -18,6 +18,9 @@ transformers = "*"
 sentencepiece = "*"
 protobuf = "*"
 scipy = "*"
+gspread = "*"
+google-auth = "*"
+pandas = "*"
 
 [dev-packages]
 
