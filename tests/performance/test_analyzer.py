@@ -4,6 +4,15 @@ import unittest
 
 from src.yt_analyzer.performance.analyzer import PerformanceAnalyzer
 from src.yt_analyzer.performance.dataset import DailyView, DailyViewSeries
+from src.yt_analyzer.performance.result import ReaccelerationPoint
+
+
+class FakeReaccelerationDetector:
+  def __init__(self, points):
+    self.points = points
+
+  def detect(self, daily_views, initial_breakpoint_day):
+    return self.points
 
 
 class PerformanceAnalyzerTest(unittest.TestCase):
