@@ -95,7 +95,7 @@ class ChannelReportRenderer:
     .section-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; flex-wrap: wrap; }
     .controls { display: flex; gap: 8px; flex-wrap: wrap; }
     .chart-wrap { position: relative; overflow-x: auto; margin-top: 14px; }
-    #scatter { min-width: 620px; width: 100%; display: block; }
+    #scatter, #cumulative-chart { min-width: 620px; width: 100%; display: block; }
     .tooltip {
       position: absolute;
       display: none;
@@ -114,6 +114,31 @@ class ChannelReportRenderer:
     dt { font-size: 12px; color: var(--muted); }
     dd { margin: 3px 0 0; font-weight: 650; overflow-wrap: anywhere; }
     .detail-title { margin-top: 8px; font-size: 17px; font-weight: 700; line-height: 1.45; }
+    .cumulative-card { margin-top: 16px; }
+    .chart-legend {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .legend-line {
+      display: inline-block;
+      width: 22px;
+      height: 0;
+      margin-right: 6px;
+      vertical-align: middle;
+      border-top: 2px solid var(--series);
+    }
+    .legend-breakpoint {
+      display: inline-block;
+      width: 22px;
+      height: 0;
+      margin-right: 6px;
+      vertical-align: middle;
+      border-top: 2px dashed var(--accent);
+    }
     .bottom-grid { display: grid; grid-template-columns: 1fr 1.35fr; gap: 16px; margin-top: 16px; }
     .bars { display: grid; gap: 11px; margin-top: 16px; }
     .bar-row { display: grid; grid-template-columns: 145px 1fr 54px; gap: 10px; align-items: center; font-size: 13px; }
@@ -217,6 +242,24 @@ class ChannelReportRenderer:
         <div class="detail-title" id="detail-title">動画を選択してください</div>
         <dl id="detail"></dl>
       </aside>
+    </section>
+
+    <section class="card cumulative-card">
+      <div class="section-head">
+        <div>
+          <h2>選択動画の累積視聴推移</h2>
+          <div class="muted">各点は1日分です。breakpointは日次視聴回数から検出した日を、累積曲線上に表示します。</div>
+        </div>
+        <select id="cumulative-video-select" class="control" aria-label="表示する動画"></select>
+      </div>
+      <div class="chart-wrap" id="cumulative-chart-wrap">
+        <svg id="cumulative-chart" viewBox="0 0 760 390" aria-label="累積視聴回数グラフ"></svg>
+        <div class="tooltip" id="cumulative-tooltip"></div>
+      </div>
+      <div class="chart-legend">
+        <span><span class="legend-line"></span>cumulative_views</span>
+        <span><span class="legend-breakpoint"></span>breakpoint</span>
+      </div>
     </section>
 
     <section class="bottom-grid">
@@ -535,6 +578,124 @@ class ChannelReportRenderer:
         });
       }
 
+      function renderCumulativeVideoSelect() {
+        const select = byId("cumulative-video-select");
+        const options = videos().map(video =>
+          `<option value="${escapeHtml(video.video_id)}">${escapeHtml(video.title)}</option>`
+        );
+
+        select.innerHTML = options.join("");
+
+        if (selectedVideo && selectedVideo.video_type === mode) {
+          select.value = selectedVideo.video_id;
+        }
+      }
+
+      function renderCumulativeChart() {
+        const svg = byId("cumulative-chart");
+        const tooltip = byId("cumulative-tooltip");
+
+        if (!selectedVideo) {
+          svg.innerHTML = '<text x="380" y="195" text-anchor="middle" fill="var(--muted)">動画を選択してください</text>';
+          return;
+        }
+
+        const points = (selectedVideo.daily_metrics || [])
+          .filter(point =>
+            point.elapsed_day !== null
+            && point.cumulative_views !== null
+          );
+
+        if (points.length === 0) {
+          svg.innerHTML = '<text x="380" y="195" text-anchor="middle" fill="var(--muted)">日次データがありません</text>';
+          return;
+        }
+
+        const width = 760;
+        const height = 390;
+        const margin = { left: 68, right: 24, top: 24, bottom: 52 };
+        const innerWidth = width - margin.left - margin.right;
+        const innerHeight = height - margin.top - margin.bottom;
+        const xMin = 1;
+        const xMax = Math.max(...points.map(point => Number(point.elapsed_day)));
+        const yMin = 0;
+        const yMaxRaw = Math.max(
+          ...points.map(point => Number(point.cumulative_views))
+        );
+        const yMax = yMaxRaw === 0 ? 1 : yMaxRaw * 1.08;
+
+        const sx = value => {
+          if (xMax === xMin) return margin.left + innerWidth / 2;
+          return margin.left
+            + (Number(value) - xMin) / (xMax - xMin) * innerWidth;
+        };
+        const sy = value => margin.top
+          + innerHeight
+          - (Number(value) - yMin) / (yMax - yMin) * innerHeight;
+
+        let html = "";
+
+        for (let i = 0; i <= 4; i++) {
+          const y = margin.top + innerHeight * i / 4;
+          const value = yMax - (yMax - yMin) * i / 4;
+          html += `<line x1="${margin.left}" y1="${y}" x2="${width-margin.right}" y2="${y}" stroke="var(--border)"></line>`;
+          html += `<text x="${margin.left-9}" y="${y+4}" text-anchor="end" font-size="11" fill="var(--muted)">${fmt(value, 0)}</text>`;
+        }
+
+        const polyline = points
+          .map(point => `${sx(point.elapsed_day)},${sy(point.cumulative_views)}`)
+          .join(" ");
+
+        html += `<polyline points="${polyline}" fill="none" stroke="var(--series)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"></polyline>`;
+
+        const breakpointDay = selectedVideo.performance.breakpoint_day;
+        const breakpointPoint = breakpointDay === null
+          ? null
+          : points.find(
+              point => Number(point.elapsed_day) === Number(breakpointDay)
+            );
+
+        if (breakpointDay !== null && breakpointDay !== undefined) {
+          const breakpointX = sx(breakpointDay);
+          html += `<line class="breakpoint-line" x1="${breakpointX}" y1="${margin.top}" x2="${breakpointX}" y2="${margin.top + innerHeight}" stroke="var(--accent)" stroke-width="2" stroke-dasharray="7 5"></line>`;
+          html += `<text x="${Math.min(breakpointX + 7, width - 110)}" y="${margin.top + 14}" font-size="11" fill="var(--accent)">breakpoint: day ${fmt(breakpointDay, 0)}</text>`;
+        }
+
+        points.forEach((point, index) => {
+          const isBreakpoint = breakpointPoint
+            && Number(point.elapsed_day) === Number(breakpointDay);
+          html += `<circle class="cumulative-point" data-index="${index}" cx="${sx(point.elapsed_day)}" cy="${sy(point.cumulative_views)}" r="${isBreakpoint ? 7 : 4}" fill="${isBreakpoint ? "var(--accent)" : "var(--series)"}" stroke="var(--card)" stroke-width="2" tabindex="0"></circle>`;
+        });
+
+        html += `<text x="${margin.left + innerWidth/2}" y="${height-8}" text-anchor="middle" font-size="12" fill="var(--muted)">経過日数</text>`;
+        html += `<text x="16" y="${margin.top + innerHeight/2}" text-anchor="middle" font-size="12" fill="var(--muted)" transform="rotate(-90 16 ${margin.top + innerHeight/2})">累積視聴回数</text>`;
+
+        svg.innerHTML = html;
+
+        svg.querySelectorAll(".cumulative-point").forEach(element => {
+          const point = points[Number(element.dataset.index)];
+
+          const show = () => {
+            tooltip.innerHTML = `<strong>${escapeHtml(selectedVideo.title)}</strong><br>day ${fmt(point.elapsed_day, 0)}<br>日次視聴: ${fmt(point.daily_views, 0)}<br>累積視聴: ${fmt(point.cumulative_views, 0)}`;
+            tooltip.style.display = "block";
+            tooltip.style.left = Math.min(
+              Number(element.getAttribute("cx")) + 12,
+              500
+            ) + "px";
+            tooltip.style.top = Math.max(
+              Number(element.getAttribute("cy")) - 6,
+              8
+            ) + "px";
+          };
+          const hide = () => tooltip.style.display = "none";
+
+          element.addEventListener("mouseenter", show);
+          element.addEventListener("mouseleave", hide);
+          element.addEventListener("focus", show);
+          element.addEventListener("blur", hide);
+        });
+      }
+
       function renderFeatureTable() {
         const rows = [...videos()];
         const key = featureSort.key;
@@ -578,7 +739,14 @@ class ChannelReportRenderer:
           });
         });
 
-        document.querySelectorAll("[data-feature-sort]").forEach(button => {
+        byId("cumulative-video-select").addEventListener("change", event => {
+        const video = report.videos.find(
+          item => item.video_id === event.target.value
+        );
+
+        if (video) selectVideo(video);
+      });
+      document.querySelectorAll("[data-feature-sort]").forEach(button => {
           button.classList.toggle(
             "active",
             button.dataset.featureSort === featureSort.key
@@ -599,6 +767,13 @@ class ChannelReportRenderer:
       function selectVideo(video) {
         selectedVideo = video;
         byId("detail-title").textContent = video.title;
+
+        const cumulativeSelect = byId("cumulative-video-select");
+        if (cumulativeSelect && cumulativeSelect.value !== video.video_id) {
+          cumulativeSelect.value = video.video_id;
+        }
+
+        renderCumulativeChart();
         const target = targets[mode][targetName()];
         const values = [
           ["動画ID", video.video_id],
@@ -639,7 +814,13 @@ class ChannelReportRenderer:
         if (!selectedVideo || selectedVideo.video_type !== mode) {
           selectedVideo = candidates[0] || null;
         }
-        if (selectedVideo) selectVideo(selectedVideo);
+        renderCumulativeVideoSelect();
+
+        if (selectedVideo) {
+          selectVideo(selectedVideo);
+        } else {
+          renderCumulativeChart();
+        }
       }
 
       document.querySelectorAll("[data-mode]").forEach(button => {
