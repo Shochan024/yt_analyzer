@@ -11,6 +11,8 @@ class ReaccelerationDetector:
     slope_window: int = 5,
     minimum_positive_slope: float = 1.0,
     minimum_strength: float = 1.0,
+    minimum_mean_gain: float = 5.0,
+    minimum_mean_ratio: float = 1.15,
     minimum_duration: int = 3,
     minimum_gap_days: int = 7
   ) -> None:
@@ -18,6 +20,8 @@ class ReaccelerationDetector:
     self._slope_window = slope_window
     self._minimum_positive_slope = minimum_positive_slope
     self._minimum_strength = minimum_strength
+    self._minimum_mean_gain = minimum_mean_gain
+    self._minimum_mean_ratio = minimum_mean_ratio
     self._minimum_duration = minimum_duration
     self._minimum_gap_days = minimum_gap_days
 
@@ -93,11 +97,24 @@ class ReaccelerationDetector:
         smoothed[index:after_end]
       )
       strength = slope_after - slope_before
+      before_values = smoothed[before_start:before_end]
+      after_values = smoothed[index:after_end]
+      before_mean = sum(before_values) / len(before_values)
+      after_mean = sum(after_values) / len(after_values)
 
       if slope_after < self._minimum_positive_slope:
         continue
 
       if strength < self._minimum_strength:
+        continue
+
+      if after_mean - before_mean < self._minimum_mean_gain:
+        continue
+
+      if (
+        before_mean > 0
+        and after_mean / before_mean < self._minimum_mean_ratio
+      ):
         continue
 
       if not self._persists(
