@@ -24,7 +24,19 @@ class ChannelReportRendererTest(unittest.TestCase):
             "breakpoint_day": 3,
             "long_tail_ratio": 0.4,
             "max_views_per_day": 500
-          }
+          },
+          "daily_metrics": [
+            {
+              "elapsed_day": 1,
+              "daily_views": 100,
+              "cumulative_views": 100
+            },
+            {
+              "elapsed_day": 3,
+              "daily_views": 200,
+              "cumulative_views": 500
+            }
+          ]
         }
       ],
       "analysis": {
@@ -68,6 +80,10 @@ class ChannelReportRendererTest(unittest.TestCase):
     self.assertIn('id="feature-table"', html)
     self.assertIn('data-feature-sort="mean_contextual_surprisal"', html)
     self.assertIn("renderFeatureTable", html)
+    self.assertIn('id="cumulative-chart"', html)
+    self.assertIn("breakpoint-line", html)
+    self.assertIn("cumulative-point", html)
+    self.assertIn("renderCumulativeChart", html)
 
 
 if __name__ == "__main__":
