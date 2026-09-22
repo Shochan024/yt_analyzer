@@ -117,8 +117,35 @@ class ChannelReportRenderer:
     .bottom-grid { display: grid; grid-template-columns: 1fr 1.35fr; gap: 16px; margin-top: 16px; }
     .bars { display: grid; gap: 11px; margin-top: 16px; }
     .bar-row { display: grid; grid-template-columns: 145px 1fr 54px; gap: 10px; align-items: center; font-size: 13px; }
-    .bar-track { height: 10px; border-radius: 999px; background: var(--panel); overflow: hidden; }
-    .bar-fill { height: 100%; border-radius: inherit; background: var(--series2); }
+    .bar-track {
+      position: relative;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--panel);
+      overflow: hidden;
+    }
+    .bar-zero {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: var(--border);
+    }
+    .bar-fill {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      border-radius: 999px;
+    }
+    .bar-fill.positive {
+      left: 50%;
+      background: var(--series);
+    }
+    .bar-fill.negative {
+      right: 50%;
+      background: var(--series2);
+    }
     .table-wrap { overflow-x: auto; margin-top: 12px; }
     table { width: 100%; min-width: 650px; border-collapse: collapse; font-size: 13px; }
     th { text-align: left; color: var(--muted); font-size: 11px; padding: 0 10px 8px 0; }
@@ -323,6 +350,7 @@ class ChannelReportRenderer:
         byId("stats").innerHTML = [
           `Pearson r = ${fmt(corr.pearson, 3)}`,
           `Spearman ρ = ${fmt(corr.spearman, 3)}`,
+          `傾き = ${fmt(reg.coefficient, 4)}`,
           `R² = ${fmt(reg.r_squared, 3)}`,
           `n = ${corr.sample_size ?? 0}`
         ].map(text => `<span>${text}</span>`).join("");
@@ -349,8 +377,10 @@ class ChannelReportRenderer:
         const margin = { left: 62, right: 24, top: 20, bottom: 52 };
         const innerWidth = width - margin.left - margin.right;
         const innerHeight = height - margin.top - margin.bottom;
-        let xMin = Math.min(...points.map(p => Number(p.x)));
-        let xMax = Math.max(...points.map(p => Number(p.x)));
+        const observedXMin = Math.min(...points.map(p => Number(p.x)));
+        const observedXMax = Math.max(...points.map(p => Number(p.x)));
+        let xMin = observedXMin;
+        let xMax = observedXMax;
         let yMin = Math.min(...points.map(p => Number(p.y)));
         let yMax = Math.max(...points.map(p => Number(p.y)));
 
@@ -371,6 +401,22 @@ class ChannelReportRenderer:
           const value = yMax - (yMax - yMin) * i / 4;
           html += `<line x1="${margin.left}" y1="${y}" x2="${width-margin.right}" y2="${y}" stroke="var(--border)"/>`;
           html += `<text x="${margin.left-9}" y="${y+4}" text-anchor="end" font-size="11" fill="var(--muted)">${fmt(value, 2)}</text>`;
+        }
+
+        const regression = analysisForTarget().regressions[feature] || {};
+        if (
+          regression.coefficient !== null
+          && regression.coefficient !== undefined
+          && regression.intercept !== null
+          && regression.intercept !== undefined
+          && observedXMin !== observedXMax
+        ) {
+          const y1 = Number(regression.intercept)
+            + Number(regression.coefficient) * observedXMin;
+          const y2 = Number(regression.intercept)
+            + Number(regression.coefficient) * observedXMax;
+
+          html += `<line class="regression-line" x1="${sx(observedXMin)}" y1="${sy(y1)}" x2="${sx(observedXMax)}" y2="${sy(y2)}" stroke="var(--accent)" stroke-width="2" stroke-dasharray="7 5"></line>`;
         }
 
         points.forEach((point, index) => {
@@ -411,9 +457,17 @@ class ChannelReportRenderer:
         const rows = Object.entries(featureLabels).map(([name, label]) => {
           const result = correlations[name] || {};
           const value = result.pearson;
-          const width = value === null || value === undefined ? 0 : Math.min(Math.abs(Number(value)) * 100, 100);
+          const numericValue = value === null || value === undefined
+            ? null
+            : Number(value);
+          const width = numericValue === null
+            ? 0
+            : Math.min(Math.abs(numericValue) * 50, 50);
+          const direction = numericValue !== null && numericValue < 0
+            ? "negative"
+            : "positive";
 
-          return `<div class="bar-row"><div>${label}</div><div class="bar-track" title="Pearson r = ${fmt(value, 3)}"><div class="bar-fill" style="width:${width}%"></div></div><div>${fmt(value, 2)}</div></div>`;
+          return `<div class="bar-row"><div>${label}</div><div class="bar-track" title="Pearson r = ${fmt(value, 3)}"><div class="bar-zero"></div><div class="bar-fill ${direction}" style="width:${width}%"></div></div><div>${fmt(value, 2)}</div></div>`;
         });
 
         byId("bars").innerHTML = rows.join("");
