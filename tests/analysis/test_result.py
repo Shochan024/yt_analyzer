@@ -2,10 +2,7 @@
 
 import unittest
 
-from src.yt_analyzer.analysis.result import (
-  CorrelationResult,
-  RegressionResult
-)
+from src.yt_analyzer.analysis.result import CorrelationResult, RegressionResult
 
 
 class AnalysisResultTest(unittest.TestCase):

@@ -5,7 +5,7 @@ import unittest
 from src.yt_analyzer.analysis.dataset import (
   LongAnalysisRecord,
   ShortAnalysisRecord,
-  TitleFeatureValues
+  TitleFeatureValues,
 )
 
 
