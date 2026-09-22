@@ -37,12 +37,6 @@ class PerformanceResult:
   post_break_peak_views: int | None
   post_break_peak_ratio: float | None
 
-  reacceleration_points: tuple[ReaccelerationPoint, ...]
-  reacceleration_count: int
-  primary_reacceleration_day: int | None
-  primary_reacceleration_views: int | None
-  primary_reacceleration_strength: float | None
-
   cumulative_views_3d: int | None
   cumulative_views_7d: int | None
   cumulative_views_10d: int | None
@@ -51,6 +45,12 @@ class PerformanceResult:
 
   total_views: int
   observed_days: int
+
+  reacceleration_points: tuple[ReaccelerationPoint, ...] = ()
+  reacceleration_count: int = 0
+  primary_reacceleration_day: int | None = None
+  primary_reacceleration_views: int | None = None
+  primary_reacceleration_strength: float | None = None
 
 
 @dataclass(frozen=True)
