@@ -441,15 +441,19 @@ class PerformanceAnalyzerTest(unittest.TestCase):
     detector = FakeReaccelerationDetector(
       [
         ReaccelerationPoint(
-          day=6,
-          views=300,
+          start_day=6,
+          start_views=300,
+          peak_strength_day=7,
+          peak_strength_views=250,
           slope_before=-10.0,
           slope_after=20.0,
           strength=30.0
         ),
         ReaccelerationPoint(
-          day=8,
-          views=500,
+          start_day=8,
+          start_views=500,
+          peak_strength_day=8,
+          peak_strength_views=500,
           slope_before=5.0,
           slope_after=50.0,
           strength=45.0
@@ -490,6 +494,10 @@ class PerformanceAnalyzerTest(unittest.TestCase):
     self.assertEqual(
       result.primary_reacceleration_views,
       500
+    )
+    self.assertEqual(
+      result.primary_reacceleration_peak_strength_day,
+      8
     )
     self.assertEqual(
       result.primary_reacceleration_strength,
