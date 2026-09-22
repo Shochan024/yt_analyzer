@@ -6,6 +6,7 @@ from src.yt_analyzer.application.performance_metrics_command import (
   run_performance_metrics,
 )
 from src.yt_analyzer.application.pipeline_command import run_all_pipeline
+from src.yt_analyzer.application.report_command import run_channel_report
 from src.yt_analyzer.application.statistics_command import (
   run_long_statistics,
   run_short_statistics,
@@ -51,6 +52,12 @@ def pipeline_all(c):
   run_all_pipeline()
 
 
+@task(name="channel")
+def report_channel(c):
+  output_path = run_channel_report()
+  print(f"Written: {output_path}")
+
+
 title = Collection("title")
 title.add_task(features)
 
@@ -64,9 +71,13 @@ statistics.add_task(statistics_short)
 pipeline = Collection("pipeline")
 pipeline.add_task(pipeline_all)
 
+report = Collection("report")
+report.add_task(report_channel)
+
 ns = Collection()
 ns.add_task(test)
 ns.add_collection(title)
 ns.add_collection(performance)
 ns.add_collection(statistics)
 ns.add_collection(pipeline)
+ns.add_collection(report)
