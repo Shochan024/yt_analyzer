@@ -142,15 +142,25 @@ class SpreadsheetAnalysisDataRepository(AnalysisDataRepository):
     )
 
   def _date(self, value: object) -> date:
-    if isinstance(
-      value,
-      date
-    ):
+    if isinstance(value, datetime):
+      return value.date()
+
+    if isinstance(value, date):
       return value
 
-    return date.fromisoformat(
-      str(value).strip()
+    normalized = str(value).strip().replace(
+      "/",
+      "-"
     )
+
+    try:
+      return date.fromisoformat(
+        normalized
+      )
+    except ValueError as error:
+      raise ValueError(
+        f"Unsupported date format: {value}"
+      ) from error
 
   def _optional_float(self, value: object) -> float | None:
     if self._blank(
