@@ -17,11 +17,15 @@ class PerformanceMetricsRunner:
   def run(self, video_id: str | None = None) -> list[PerformanceResult]:
     videos = self._repository.videos()
     targets = self._targets(videos, video_id)
+    records = []
 
-    return [
-      self._analyze(video)
-      for video in targets
-    ]
+    for video in targets:
+      result = self._analyze(video)
+
+      if result is not None:
+        records.append(result)
+
+    return records
 
   def _targets(
     self,
@@ -42,8 +46,11 @@ class PerformanceMetricsRunner:
 
     return targets
 
-  def _analyze(self, video: VideoRecord) -> PerformanceResult:
+  def _analyze(self, video: VideoRecord) -> PerformanceResult | None:
     metrics = self._repository.daily_metrics(video.video_id)
+
+    if not metrics:
+      return None
 
     series = DailyViewSeries(
       video_id=video.video_id,
