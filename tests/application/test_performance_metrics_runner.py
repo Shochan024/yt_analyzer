@@ -3,7 +3,7 @@ from datetime import date, datetime
 from zoneinfo import ZoneInfo
 
 from src.yt_analyzer.application.performance_metrics_runner import (
-  PerformanceMetricsRunner,
+  PerformanceMetricsRunner
 )
 from src.yt_analyzer.data.model import DailyMetricRecord, VideoRecord, VideoType
 from src.yt_analyzer.data.repository import AnalysisDataRepository
@@ -155,6 +155,32 @@ class PerformanceMetricsRunnerTest(unittest.TestCase):
     self.assertEqual(
       [(daily_view.day, daily_view.views) for daily_view in series.daily_views],
       [(1, 100), (2, 200)]
+    )
+
+  def test_run_skips_video_without_daily_metrics(self):
+    repository = FakeRepository(
+      videos=self.videos,
+      metrics={
+        "video-1": [
+          create_metric("video-1", 1, 100)
+        ]
+      }
+    )
+    analyzer = FakePerformanceAnalyzer()
+    runner = PerformanceMetricsRunner(
+      repository=repository,
+      analyzer=analyzer
+    )
+
+    records = runner.run()
+
+    self.assertEqual(
+      [record.video_id for record in records],
+      ["video-1"]
+    )
+    self.assertEqual(
+      [series.video_id for series in analyzer.series],
+      ["video-1"]
     )
 
 
