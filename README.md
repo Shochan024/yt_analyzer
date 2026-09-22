@@ -103,11 +103,11 @@ SudachiPyによる日本語形態素解析後の単語数です。
 
 ## 3.1 Self-information
 
-ある事象 \(x\) の自己情報量は、
+ある事象 $x$ の自己情報量は、
 
-$$
+```math
 I(x)=-\log P(x)
-$$
+```
 
 で定義されます。
 
@@ -115,15 +115,15 @@ $$
 
 例えば、
 
-$$
+```math
 P(x)=0.5
-$$
+```
 
 よりも、
 
-$$
+```math
 P(x)=0.001
-$$
+```
 
 の方が自己情報量は大きくなります。
 
@@ -133,11 +133,11 @@ $$
 
 確率分布全体の平均的な自己情報量は、
 
-$$
+```math
 H(X)
 =
--\sum_x P(x)\log P(x)
-$$
+-\sum_{x} P(x)\log P(x)
+```
 
 で表されます。
 
@@ -147,25 +147,25 @@ $$
 
 # 4. unigram_cross_entropy
 
-タイトル中の各単語について、外部のunigram頻度辞書から確率 \(q(w)\) を推定します。
+タイトル中の各単語について、外部のunigram頻度辞書から確率 $q(w)$ を推定します。
 
-単語 \(w_i\) のsurprisalは、
+単語 $w_i$ のsurprisalは、
 
-$$
+```math
 -\log q(w_i)
-$$
+```
 
 です。
 
 タイトル全体では、
 
-$$
+```math
 H(p_{\text{title}},q)
 =
 -\frac{1}{n}
 \sum_{i=1}^{n}
 \log q(w_i)
-$$
+```
 
 を計算します。
 
@@ -191,19 +191,19 @@ $$
 
 現在は概ね、
 
-$$
+```math
 P(w)
 =
 \frac{c(w)+1}{N+V+1}
-$$
+```
 
 のような平滑化を利用します。
 
 未知語でも確率が0にならず、
 
-$$
+```math
 -\log 0
-$$
+```
 
 を避けることができます。
 
@@ -215,31 +215,31 @@ $$
 
 Causal Language Modelでは、
 
-$$
+```math
 P(t_i \mid t_1,\dots,t_{i-1})
-$$
+```
 
 を計算できます。
 
 各トークンのsurprisalは、
 
-$$
+```math
 S_i
 =
 -\log
 P(t_i \mid t_1,\dots,t_{i-1})
-$$
+```
 
 です。
 
 タイトル全体では、
 
-$$
-\bar S
+```math
+\bar{S}
 =
 \frac{1}{n}
 \sum_i S_i
-$$
+```
 
 を計算します。
 
@@ -290,11 +290,11 @@ mean_contextual_surprisal
 
 例えばVIFは、
 
-$$
+```math
 VIF_j
 =
 \frac{1}{1-R_j^2}
-$$
+```
 
 で計算できます。
 
@@ -357,7 +357,7 @@ Shortについてはタイトル特徴量の説明力がLongより弱い可能�
 
 Pearson相関係数は主に線形関係を評価します。
 
-$$
+```math
 r
 =
 \frac{
@@ -365,13 +365,13 @@ r
 }{
 \sigma_X\sigma_Y
 }
-$$
+```
 
 値は、
 
-$$
+```math
 -1 \le r \le 1
-$$
+```
 
 を取ります。
 
@@ -391,7 +391,7 @@ Spearman相関は順位に基づく相関係数です。
 
 各タイトル特徴量について、
 
-$$
+```math
 Y
 =
 \beta_0
@@ -399,13 +399,13 @@ Y
 \beta_1 X
 +
 \varepsilon
-$$
+```
 
 の単回帰を行います。
 
 Longの場合は例えば、
 
-$$
+```math
 CTR
 =
 \beta_0
@@ -415,7 +415,7 @@ CTR
 mean\_contextual\_surprisal
 +
 \varepsilon
-$$
+```
 
 です。
 
@@ -452,9 +452,9 @@ coefficient = 0.8
 
 動画ごとの日次視聴回数を、
 
-$$
+```math
 v_1,v_2,\dots,v_n
-$$
+```
 
 として扱います。
 
@@ -482,11 +482,11 @@ $$
 
 例えば、
 
-$$
+```math
 cumulative\_views\_10d
 =
 \sum_{t=1}^{10}v_t
-$$
+```
 
 です。
 
@@ -524,7 +524,7 @@ breakpointは、
 
 ## Piecewise Linear Regression
 
-各候補日 \(k\) に対して時系列を、
+各候補日 $k$ に対して時系列を、
 
 ```text
 day 1 ... k
@@ -535,49 +535,49 @@ day k+1 ... n
 
 前半:
 
-$$
+```math
 v_t
 =
 a_1+b_1t+\varepsilon_t
-$$
+```
 
 後半:
 
-$$
+```math
 v_t
 =
 a_2+b_2t+\varepsilon_t
-$$
+```
 
 それぞれの残差平方和を、
 
-$$
+```math
 RSS_{\mathrm{pre}}(k)
-$$
+```
 
-$$
+```math
 RSS_{\mathrm{post}}(k)
-$$
+```
 
 とすると、
 
-$$
+```math
 RSS(k)
 =
 RSS_{\mathrm{pre}}(k)
 +
 RSS_{\mathrm{post}}(k)
-$$
+```
 
 を計算します。
 
 最終的に、
 
-$$
+```math
 breakpoint
 =
 \arg\min_k RSS(k)
-$$
+```
 
 とします。
 
@@ -614,7 +614,7 @@ breakpoint後の回帰直線の傾きです。
 
 ## decay_ratio
 
-$$
+```math
 decay\_ratio
 =
 \frac{
@@ -622,7 +622,7 @@ decay\_ratio
 }{
 \text{breakpoint以前の平均日次視聴数}
 }
-$$
+```
 
 です。
 
@@ -632,7 +632,7 @@ $$
 
 ## long_tail_ratio
 
-$$
+```math
 long\_tail\_ratio
 =
 \frac{
@@ -640,7 +640,7 @@ long\_tail\_ratio
 }{
 \text{全観測期間の累積視聴数}
 }
-$$
+```
 
 です。
 
@@ -652,27 +652,27 @@ $$
 
 初期ピークは、
 
-$$
+```math
 initial\_peak
 =
 \max_{t \le breakpoint}v_t
-$$
+```
 
 とします。
 
 breakpoint後ピークは、
 
-$$
+```math
 post\_break\_peak
 =
 \max_{t>breakpoint}v_t
-$$
+```
 
 です。
 
 再燃の強さは、
 
-$$
+```math
 post\_break\_peak\_ratio
 =
 \frac{
@@ -680,7 +680,7 @@ post\_break\_peak
 }{
 initial\_peak
 }
-$$
+```
 
 で評価します。
 

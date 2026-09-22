@@ -4,19 +4,20 @@ import math
 import re
 
 from .tokenizer import Token
+from .word_frequency import WordFrequencyEstimator
 
 
 class TitleFeatures:
   def __init__(
-      self,
-      title: str,
-      tokens: list[Token],
-      word_frequencies: dict[str, int] | None = None,
-      mean_contextual_surprisal: float | None = None
-    ) -> None:
+    self,
+    title: str,
+    tokens: list[Token],
+    word_frequency_estimator: WordFrequencyEstimator | None = None,
+    mean_contextual_surprisal: float | None = None
+  ) -> None:
     self.title = title
     self.tokens = tokens
-    self.word_frequencies = word_frequencies
+    self._word_frequency_estimator = word_frequency_estimator
     self._mean_contextual_surprisal = mean_contextual_surprisal
 
   @property
@@ -52,7 +53,10 @@ class TitleFeatures:
     if self.word_count == 0:
       return 0.0
 
-    return self.proper_noun_count / self.word_count
+    return (
+      self.proper_noun_count
+      / self.word_count
+    )
 
   @property
   def unique_word_count(self) -> int:
@@ -63,36 +67,48 @@ class TitleFeatures:
 
   @property
   def unique_word_ratio(self) -> float:
-    if self.unique_word_count == 0:
+    if self.word_count == 0:
       return 0.0
 
-    return self.unique_word_count / self.word_count
+    return (
+      self.unique_word_count
+      / self.word_count
+    )
 
   @property
   def number_count(self) -> int:
-    return len(re.findall(r"\d+", self.title))
+    return len(
+      re.findall(
+        r"\d+",
+        self.title
+      )
+    )
 
   @property
   def unigram_cross_entropy(self) -> float:
-    if not self.words or not self.word_frequencies:
+    if not self.words:
       return 0.0
 
-    total_frequency = sum(self.word_frequencies.values())
+    if self._word_frequency_estimator is None:
+      return 0.0
 
-    scores = []
-    for token in self.words:
-      word = token.normalized_form
-      frequency = self.word_frequencies.get(word, 0)
-
-      # 未知の用語でも真数が0にならないようにsmoothing
-      probability = (frequency + 1) / (
-        total_frequency + len(self.word_frequencies) + 1
+    scores = [
+      -math.log(
+        self._word_frequency_estimator.probability(
+          token.normalized_form
+        )
       )
+      for token in self.words
+    ]
 
-      scores.append(-math.log(probability))
-
-    return sum(scores) / len(scores)
+    return (
+      sum(scores)
+      / len(scores)
+    )
 
   @property
   def mean_contextual_surprisal(self) -> float:
-    return self._mean_contextual_surprisal or 0.0
+    return (
+      self._mean_contextual_surprisal
+      or 0.0
+    )
