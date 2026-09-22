@@ -14,6 +14,7 @@ class PerformanceCsvWriter:
     "max_views_day",
     "max_views_per_day",
     "breakpoint_day",
+    "initial_breakpoint_day",
     "views_at_breakpoint",
     "pre_break_slope",
     "post_break_slope",
