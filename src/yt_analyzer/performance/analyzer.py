@@ -92,6 +92,7 @@ class PerformanceAnalyzer:
         daily_views,
         breakpoint.breakpoint_day
       ),
+      initial_breakpoint_day=breakpoint.breakpoint_day,
       reacceleration_points=tuple(reacceleration_points),
       reacceleration_count=len(reacceleration_points),
       primary_reacceleration_day=(
