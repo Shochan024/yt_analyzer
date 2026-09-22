@@ -2,7 +2,9 @@ import unittest
 from datetime import date, datetime
 from zoneinfo import ZoneInfo
 
-from src.yt_analyzer.application.performance_metrics_runner import PerformanceMetricsRunner
+from src.yt_analyzer.application.performance_metrics_runner import (
+  PerformanceMetricsRunner,
+)
 from src.yt_analyzer.data.model import DailyMetricRecord, VideoRecord, VideoType
 from src.yt_analyzer.data.repository import AnalysisDataRepository
 from src.yt_analyzer.performance.result import PerformanceResult
