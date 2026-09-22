@@ -96,12 +96,17 @@ class PerformanceAnalyzer:
       reacceleration_points=tuple(reacceleration_points),
       reacceleration_count=len(reacceleration_points),
       primary_reacceleration_day=(
-        primary_reacceleration.day
+        primary_reacceleration.start_day
         if primary_reacceleration is not None
         else None
       ),
       primary_reacceleration_views=(
-        primary_reacceleration.views
+        primary_reacceleration.start_views
+        if primary_reacceleration is not None
+        else None
+      ),
+      primary_reacceleration_peak_strength_day=(
+        primary_reacceleration.peak_strength_day
         if primary_reacceleration is not None
         else None
       ),
@@ -431,7 +436,6 @@ class PerformanceAnalyzer:
       if daily_view.day <= days
     )
 
-
   def _primary_reacceleration(
     self,
     points: list[ReaccelerationPoint]
@@ -443,6 +447,6 @@ class PerformanceAnalyzer:
       points,
       key=lambda point: (
         point.strength,
-        -point.day
+        -point.start_day
       )
     )
