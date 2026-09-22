@@ -435,3 +435,63 @@ class PerformanceAnalyzerTest(unittest.TestCase):
     self.assertIsNone(
       result.post_break_peak_ratio
     )
+
+
+  def test_analyze_returns_multiple_reaccelerations_and_primary(self):
+    detector = FakeReaccelerationDetector(
+      [
+        ReaccelerationPoint(
+          day=6,
+          views=300,
+          slope_before=-10.0,
+          slope_after=20.0,
+          strength=30.0
+        ),
+        ReaccelerationPoint(
+          day=8,
+          views=500,
+          slope_before=5.0,
+          slope_after=50.0,
+          strength=45.0
+        )
+      ]
+    )
+    analyzer = PerformanceAnalyzer(
+      reacceleration_detector=detector
+    )
+    series = DailyViewSeries(
+      video_id="video-1",
+      daily_views=[
+        DailyView(day=1, views=100),
+        DailyView(day=2, views=200),
+        DailyView(day=3, views=300),
+        DailyView(day=4, views=400),
+        DailyView(day=5, views=350),
+        DailyView(day=6, views=300),
+        DailyView(day=7, views=250),
+        DailyView(day=8, views=500)
+      ]
+    )
+
+    result = analyzer.analyze(series)
+
+    self.assertEqual(
+      result.initial_breakpoint_day,
+      result.breakpoint_day
+    )
+    self.assertEqual(
+      result.reacceleration_count,
+      2
+    )
+    self.assertEqual(
+      result.primary_reacceleration_day,
+      8
+    )
+    self.assertEqual(
+      result.primary_reacceleration_views,
+      500
+    )
+    self.assertEqual(
+      result.primary_reacceleration_strength,
+      45.0
+    )
