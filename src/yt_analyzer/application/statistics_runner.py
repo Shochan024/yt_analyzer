@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from ..analysis.dataset import (
   LongAnalysisRecord,
   ShortAnalysisRecord,
@@ -23,7 +25,7 @@ class StatisticsRunner:
     self._long_analyzer = long_analyzer
     self._short_analyzer = short_analyzer
 
-  def run_long(self, path) -> LongAnalysisResult:
+  def run_long(self, path: Path) -> LongAnalysisResult:
     records = self._reader.read(path)
 
     return self._long_analyzer.analyze(
@@ -38,7 +40,7 @@ class StatisticsRunner:
       ]
     )
 
-  def run_short(self, path) -> ShortAnalysisResult:
+  def run_short(self, path: Path) -> ShortAnalysisResult:
     records = self._reader.read(path)
 
     return self._short_analyzer.analyze(
