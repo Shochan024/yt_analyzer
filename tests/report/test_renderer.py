@@ -22,9 +22,22 @@ class ChannelReportRendererTest(unittest.TestCase):
           "performance": {
             "cumulative_views_7d": 1000,
             "breakpoint_day": 3,
+            "initial_breakpoint_day": 3,
+            "reacceleration_count": 1,
+            "primary_reacceleration_day": 5,
+            "post_break_peak_day": 7,
             "long_tail_ratio": 0.4,
             "max_views_per_day": 500
           },
+          "reacceleration_points": [
+            {
+              "day": 5,
+              "views": 300,
+              "slope_before": -1.0,
+              "slope_after": 4.0,
+              "strength": 5.0
+            }
+          ],
           "daily_metrics": [
             {
               "elapsed_day": 1,
@@ -35,6 +48,16 @@ class ChannelReportRendererTest(unittest.TestCase):
               "elapsed_day": 3,
               "daily_views": 200,
               "cumulative_views": 500
+            },
+            {
+              "elapsed_day": 5,
+              "daily_views": 300,
+              "cumulative_views": 800
+            },
+            {
+              "elapsed_day": 7,
+              "daily_views": 500,
+              "cumulative_views": 1300
             }
           ]
         }
@@ -84,6 +107,11 @@ class ChannelReportRendererTest(unittest.TestCase):
     self.assertIn("breakpoint-line", html)
     self.assertIn("cumulative-point", html)
     self.assertIn("renderCumulativeChart", html)
+    self.assertIn("reacceleration-line", html)
+    self.assertIn("post-break-peak-marker", html)
+    self.assertIn("primary_reacceleration_day", html)
+    self.assertIn("初動終了", html)
+    self.assertIn("再加速", html)
 
 
 if __name__ == "__main__":
