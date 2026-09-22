@@ -726,7 +726,7 @@ class ChannelReportRenderer:
         });
 
         if (postBreakPeakPoint) {
-          html += `<circle class="post-break-peak-marker" cx="${sx(postBreakPeakPoint.elapsed_day)}" cy="${sy(postBreakPeakPoint.cumulative_views)}" r="10" fill="none" stroke="var(--text)" stroke-width="2"></circle>`;
+          html += `<circle class="post-break-peak-marker" cx="${sx(postBreakPeakPoint.elapsed_day)}" cy="${sy(postBreakPeakPoint.cumulative_views)}" r="10" fill="none" stroke="var(--text)" stroke-width="2" pointer-events="none"></circle>`;
         }
 
         html += `<text x="${margin.left + innerWidth/2}" y="${height-8}" text-anchor="middle" font-size="12" fill="var(--muted)">経過日数</text>`;
