@@ -5,6 +5,7 @@ from invoke import Collection, task
 from src.yt_analyzer.application.performance_metrics_command import (
   run_performance_metrics,
 )
+from src.yt_analyzer.application.pipeline_command import run_all_pipeline
 from src.yt_analyzer.application.statistics_command import (
   run_long_statistics,
   run_short_statistics,
@@ -45,6 +46,11 @@ def statistics_short(c):
   print(f"Written: {output_path}")
 
 
+@task(name="all")
+def pipeline_all(c):
+  run_all_pipeline()
+
+
 title = Collection("title")
 title.add_task(features)
 
@@ -55,8 +61,12 @@ statistics = Collection("statistics")
 statistics.add_task(statistics_long)
 statistics.add_task(statistics_short)
 
+pipeline = Collection("pipeline")
+pipeline.add_task(pipeline_all)
+
 ns = Collection()
 ns.add_task(test)
 ns.add_collection(title)
 ns.add_collection(performance)
 ns.add_collection(statistics)
+ns.add_collection(pipeline)
