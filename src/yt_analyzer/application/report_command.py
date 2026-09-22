@@ -24,7 +24,8 @@ def run_channel_report() -> Path:
     performance_path=output_dir / "performance.csv",
     long_analysis_path=output_dir / "long_analysis.json",
     short_analysis_path=output_dir / "short_analysis.json",
-    daily_metrics=daily_metrics
+    daily_metrics=daily_metrics,
+    reacceleration_path=output_dir / "reacceleration_points.json"
   )
 
   output_path = output_dir / "channel_report.html"
