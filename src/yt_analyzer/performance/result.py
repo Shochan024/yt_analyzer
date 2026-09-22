@@ -46,6 +46,7 @@ class PerformanceResult:
   total_views: int
   observed_days: int
 
+  initial_breakpoint_day: int | None = None
   reacceleration_points: tuple[ReaccelerationPoint, ...] = ()
   reacceleration_count: int = 0
   primary_reacceleration_day: int | None = None
