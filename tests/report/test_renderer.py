@@ -62,6 +62,9 @@ class ChannelReportRendererTest(unittest.TestCase):
     self.assertIn('id="scatter"', html)
     self.assertIn("mouseenter", html)
     self.assertIn("click", html)
+    self.assertIn("regression-line", html)
+    self.assertIn("bar-zero", html)
+    self.assertIn('direction = numericValue !== null && numericValue < 0', html)
 
 
 if __name__ == "__main__":
