@@ -17,6 +17,7 @@ torch = {version = "*", index = "pytorch-cpu"}
 transformers = "*"
 sentencepiece = "*"
 protobuf = "*"
+scipy = "*"
 
 [dev-packages]
 
