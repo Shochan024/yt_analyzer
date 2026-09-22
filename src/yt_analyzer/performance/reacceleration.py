@@ -1,7 +1,18 @@
+from dataclasses import dataclass
+
 from scipy.stats import linregress
 
 from .dataset import DailyView
 from .result import ReaccelerationPoint
+
+
+@dataclass(frozen=True)
+class _ReaccelerationCandidate:
+  day: int
+  views: int
+  slope_before: float
+  slope_after: float
+  strength: float
 
 
 class ReaccelerationDetector:
@@ -48,7 +59,10 @@ class ReaccelerationDetector:
       return []
 
     smoothed = self._smoothed(observations)
-    candidates = self._candidates(observations, smoothed)
+    candidates = self._candidates(
+      observations,
+      smoothed
+    )
 
     return self._merge_candidates(candidates)
 
@@ -74,7 +88,7 @@ class ReaccelerationDetector:
     self,
     observations: list[DailyView],
     smoothed: list[float]
-  ) -> list[ReaccelerationPoint]:
+  ) -> list[_ReaccelerationCandidate]:
     candidates = []
     last_start = (
       len(observations)
@@ -126,7 +140,7 @@ class ReaccelerationDetector:
 
       point = observations[index]
       candidates.append(
-        ReaccelerationPoint(
+        _ReaccelerationCandidate(
           day=point.day,
           views=point.views,
           slope_before=slope_before,
@@ -162,7 +176,7 @@ class ReaccelerationDetector:
 
   def _merge_candidates(
     self,
-    candidates: list[ReaccelerationPoint]
+    candidates: list[_ReaccelerationCandidate]
   ) -> list[ReaccelerationPoint]:
     if not candidates:
       return []
@@ -178,15 +192,32 @@ class ReaccelerationDetector:
         groups.append([candidate])
 
     return [
-      max(
-        group,
-        key=lambda point: (
-          point.strength,
-          -point.day
-        )
-      )
+      self._event(group)
       for group in groups
     ]
+
+  def _event(
+    self,
+    group: list[_ReaccelerationCandidate]
+  ) -> ReaccelerationPoint:
+    start = group[0]
+    peak = max(
+      group,
+      key=lambda point: (
+        point.strength,
+        -point.day
+      )
+    )
+
+    return ReaccelerationPoint(
+      start_day=start.day,
+      start_views=start.views,
+      peak_strength_day=peak.day,
+      peak_strength_views=peak.views,
+      slope_before=peak.slope_before,
+      slope_after=peak.slope_after,
+      strength=peak.strength
+    )
 
   def _slope(
     self,
