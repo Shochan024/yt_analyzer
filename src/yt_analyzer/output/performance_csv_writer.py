@@ -26,6 +26,7 @@ class PerformanceCsvWriter:
     "reacceleration_count",
     "primary_reacceleration_day",
     "primary_reacceleration_views",
+    "primary_reacceleration_peak_strength_day",
     "primary_reacceleration_strength",
     "cumulative_views_3d",
     "cumulative_views_7d",
