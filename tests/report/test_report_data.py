@@ -14,6 +14,7 @@ class ReportDataBuilderTest(unittest.TestCase):
       performance_path = root / "performance.csv"
       long_path = root / "long_analysis.json"
       short_path = root / "short_analysis.json"
+      reacceleration_path = root / "reacceleration_points.json"
 
       title_path.write_text(
         "video_id,title,video_type,length,word_count,"
@@ -48,12 +49,32 @@ class ReportDataBuilderTest(unittest.TestCase):
         json.dumps({"correlations": {}, "regressions": {}, "sample_size": 1}),
         encoding="utf-8"
       )
+      reacceleration_path.write_text(
+        json.dumps(
+          [
+            {
+              "video_id": "long-1",
+              "reacceleration_points": [
+                {
+                  "day": 12,
+                  "views": 20,
+                  "slope_before": -1.0,
+                  "slope_after": 3.0,
+                  "strength": 4.0
+                }
+              ]
+            }
+          ]
+        ),
+        encoding="utf-8"
+      )
 
       data = ReportDataBuilder().build(
         title_features_path=title_path,
         performance_path=performance_path,
         long_analysis_path=long_path,
         short_analysis_path=short_path,
+        reacceleration_path=reacceleration_path,
         daily_metrics={
           "long-1": [
             {
@@ -75,6 +96,10 @@ class ReportDataBuilderTest(unittest.TestCase):
     self.assertEqual(
       data["videos"][0]["daily_metrics"][1]["cumulative_views"],
       300
+    )
+    self.assertEqual(
+      data["videos"][0]["reacceleration_points"][0]["day"],
+      12
     )
     self.assertIsNone(
       data["videos"][1]["performance"]["cumulative_views_7d"]
