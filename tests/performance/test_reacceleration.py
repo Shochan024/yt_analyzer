@@ -34,7 +34,8 @@ class ReaccelerationDetectorTest(unittest.TestCase):
     )
 
     self.assertEqual(len(points), 1)
-    self.assertEqual(points[0].day, 14)
+    self.assertEqual(points[0].start_day, 11)
+    self.assertEqual(points[0].peak_strength_day, 14)
     self.assertGreater(points[0].slope_after, points[0].slope_before)
     self.assertGreater(points[0].strength, 0)
 
@@ -53,7 +54,11 @@ class ReaccelerationDetectorTest(unittest.TestCase):
     )
 
     self.assertEqual(
-      [point.day for point in points],
+      [point.start_day for point in points],
+      [11, 24]
+    )
+    self.assertEqual(
+      [point.peak_strength_day for point in points],
       [12, 24]
     )
 
