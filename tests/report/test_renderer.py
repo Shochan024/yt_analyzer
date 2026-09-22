@@ -65,6 +65,9 @@ class ChannelReportRendererTest(unittest.TestCase):
     self.assertIn("regression-line", html)
     self.assertIn("bar-zero", html)
     self.assertIn('direction = numericValue !== null && numericValue < 0', html)
+    self.assertIn('id="feature-table"', html)
+    self.assertIn('data-feature-sort="mean_contextual_surprisal"', html)
+    self.assertIn("renderFeatureTable", html)
 
 
 if __name__ == "__main__":
