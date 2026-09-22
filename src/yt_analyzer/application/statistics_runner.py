@@ -3,14 +3,14 @@ from pathlib import Path
 from ..analysis.dataset import (
   LongAnalysisRecord,
   ShortAnalysisRecord,
-  TitleFeatureValues
+  TitleFeatureValues,
 )
 from ..analysis.long import LongAnalyzer
 from ..analysis.result import LongAnalysisResult, ShortAnalysisResult
 from ..analysis.short import ShortAnalyzer
 from ..input.title_features_csv_reader import (
   TitleFeaturesCsvReader,
-  TitleFeaturesCsvRecord
+  TitleFeaturesCsvRecord,
 )
 
 

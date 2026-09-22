@@ -2,9 +2,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from src.yt_analyzer.input.title_features_csv_reader import (
-  TitleFeaturesCsvReader
-)
+from src.yt_analyzer.input.title_features_csv_reader import TitleFeaturesCsvReader
 
 
 class TitleFeaturesCsvReaderTest(unittest.TestCase):

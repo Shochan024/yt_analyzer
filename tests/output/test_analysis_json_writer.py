@@ -6,7 +6,7 @@ from pathlib import Path
 from src.yt_analyzer.analysis.result import (
   CorrelationResult,
   LongAnalysisResult,
-  RegressionResult
+  RegressionResult,
 )
 from src.yt_analyzer.output.analysis_json_writer import AnalysisJsonWriter
 

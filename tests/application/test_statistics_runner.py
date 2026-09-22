@@ -4,9 +4,7 @@ from pathlib import Path
 from src.yt_analyzer.analysis.long import LongAnalyzer
 from src.yt_analyzer.analysis.short import ShortAnalyzer
 from src.yt_analyzer.application.statistics_runner import StatisticsRunner
-from src.yt_analyzer.input.title_features_csv_reader import (
-  TitleFeaturesCsvRecord
-)
+from src.yt_analyzer.input.title_features_csv_reader import TitleFeaturesCsvRecord
 
 
 class FakeReader:
