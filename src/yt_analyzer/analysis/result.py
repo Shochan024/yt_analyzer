@@ -23,3 +23,9 @@ class RegressionResult:
   p_value: float | None
   standard_error: float | None
   sample_size: int
+
+@dataclass(frozen=True)
+class LongAnalysisResult:
+  correlations: dict[str, CorrelationResult]
+  regressions: dict[str, RegressionResult]
+  sample_size: int
