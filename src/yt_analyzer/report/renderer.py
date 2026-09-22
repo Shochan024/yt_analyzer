@@ -739,14 +739,7 @@ class ChannelReportRenderer:
           });
         });
 
-        byId("cumulative-video-select").addEventListener("change", event => {
-        const video = report.videos.find(
-          item => item.video_id === event.target.value
-        );
-
-        if (video) selectVideo(video);
-      });
-      document.querySelectorAll("[data-feature-sort]").forEach(button => {
+        document.querySelectorAll("[data-feature-sort]").forEach(button => {
           button.classList.toggle(
             "active",
             button.dataset.featureSort === featureSort.key
@@ -840,6 +833,13 @@ class ChannelReportRenderer:
         renderBars();
         renderTable();
         if (selectedVideo) selectVideo(selectedVideo);
+      });
+      byId("cumulative-video-select").addEventListener("change", event => {
+        const video = report.videos.find(
+          item => item.video_id === event.target.value
+        );
+
+        if (video) selectVideo(video);
       });
       document.querySelectorAll("[data-feature-sort]").forEach(button => {
         button.addEventListener("click", () => {
