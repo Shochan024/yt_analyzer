@@ -53,11 +53,29 @@ class ReportDataBuilderTest(unittest.TestCase):
         title_features_path=title_path,
         performance_path=performance_path,
         long_analysis_path=long_path,
-        short_analysis_path=short_path
+        short_analysis_path=short_path,
+        daily_metrics={
+          "long-1": [
+            {
+              "elapsed_day": 1,
+              "daily_views": 100,
+              "cumulative_views": 100
+            },
+            {
+              "elapsed_day": 2,
+              "daily_views": 200,
+              "cumulative_views": 300
+            }
+          ]
+        }
       )
 
     self.assertEqual(len(data["videos"]), 3)
     self.assertEqual(data["videos"][0]["performance"]["cumulative_views_7d"], 700)
+    self.assertEqual(
+      data["videos"][0]["daily_metrics"][1]["cumulative_views"],
+      300
+    )
     self.assertIsNone(
       data["videos"][1]["performance"]["cumulative_views_7d"]
     )
