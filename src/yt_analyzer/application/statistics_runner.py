@@ -33,10 +33,14 @@ class StatisticsRunner:
         LongAnalysisRecord(
           video_id=record.video_id,
           title_features=self._title_features(record),
-          ctr=record.ctr
+          ctr=record.ctr,
+          average_percentage_viewed=record.average_percentage_viewed,
+          likes=record.likes,
+          subscribers_gained=record.subscribers_gained,
+          comments=record.comments
         )
         for record in records
-        if record.video_type == "long" and record.ctr is not None
+        if record.video_type == "long"
       ]
     )
 
@@ -48,8 +52,12 @@ class StatisticsRunner:
         ShortAnalysisRecord(
           video_id=record.video_id,
           title_features=self._title_features(record),
+          ctr=record.ctr,
           stayed_to_watch=record.stayed_to_watch,
           average_percentage_viewed=record.average_percentage_viewed,
+          likes=record.likes,
+          subscribers_gained=record.subscribers_gained,
+          comments=record.comments,
           engaged_views=record.engaged_views
         )
         for record in records
