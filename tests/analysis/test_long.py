@@ -45,15 +45,15 @@ class LongAnalyzerTest(unittest.TestCase):
       "unigram_cross_entropy"
     }
 
-    self.assertEqual(
-      set(result.correlations.keys()),
-      expected_feature_names
-    )
-
-    self.assertEqual(
-      set(result.regressions.keys()),
-      expected_feature_names
-    )
+    for target_name in LongAnalyzer.TARGET_NAMES:
+      self.assertEqual(
+        set(result.correlations[target_name].keys()),
+        expected_feature_names
+      )
+      self.assertEqual(
+        set(result.regressions[target_name].keys()),
+        expected_feature_names
+      )
 
   def test_analyze_uses_ctr_as_target(self):
     result = self.analyzer.analyze(
@@ -61,10 +61,14 @@ class LongAnalyzerTest(unittest.TestCase):
     )
 
     correlation = result.correlations[
+      "ctr"
+    ][
       "mean_contextual_surprisal"
     ]
 
     regression = result.regressions[
+      "ctr"
+    ][
       "mean_contextual_surprisal"
     ]
 
@@ -89,12 +93,12 @@ class LongAnalyzerTest(unittest.TestCase):
     )
 
     self.assertEqual(
-      result.correlations["length"].sample_size,
+      result.correlations["ctr"]["length"].sample_size,
       3
     )
 
     self.assertEqual(
-      result.regressions["length"].sample_size,
+      result.regressions["ctr"]["length"].sample_size,
       3
     )
 
@@ -104,6 +108,8 @@ class LongAnalyzerTest(unittest.TestCase):
     )
 
     correlation = result.correlations[
+      "ctr"
+    ][
       "mean_contextual_surprisal"
     ]
 
@@ -123,6 +129,8 @@ class LongAnalyzerTest(unittest.TestCase):
     )
 
     regression = result.regressions[
+      "ctr"
+    ][
       "mean_contextual_surprisal"
     ]
 
@@ -149,15 +157,17 @@ class LongAnalyzerTest(unittest.TestCase):
       0
     )
 
-    for correlation in result.correlations.values():
-      self.assertIsNone(
-        correlation.pearson
-      )
+    for target in result.correlations.values():
+      for correlation in target.values():
+        self.assertIsNone(
+          correlation.pearson
+        )
 
-    for regression in result.regressions.values():
-      self.assertIsNone(
-        regression.coefficient
-      )
+    for target in result.regressions.values():
+      for regression in target.values():
+        self.assertIsNone(
+          regression.coefficient
+        )
 
   def _create_record(
     self,

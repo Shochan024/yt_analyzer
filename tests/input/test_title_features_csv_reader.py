@@ -13,9 +13,10 @@ class TitleFeaturesCsvReaderTest(unittest.TestCase):
         "video_id,title,video_type,length,word_count,"
         "mean_contextual_surprisal,proper_noun_ratio,number_count,"
         "unigram_cross_entropy,ctr,average_percentage_viewed,"
-        "stayed_to_watch,engaged_views\n"
-        "video-1,title,long,20,10,4.5,0.2,1,8.5,0.12,,,\n"
-        "video-2,title,short,30,12,5.5,0.1,0,9.5,,0.42,0.65,120\n",
+        "stayed_to_watch,engaged_views,likes,subscribers_gained,"
+        "comments,published_at\n"
+        "video-1,title,long,20,10,4.5,0.2,1,8.5,0.12,,,,50,26,2,2026-03-24\n"
+        "video-2,title,short,30,12,5.5,0.1,0,9.5,,0.42,0.65,120,13,0,1,2026-09-19\n",
         encoding="utf-8"
       )
 
@@ -29,6 +30,10 @@ class TitleFeaturesCsvReaderTest(unittest.TestCase):
     self.assertIsNone(records[0].stayed_to_watch)
     self.assertIsNone(records[0].engaged_views)
     self.assertEqual(records[1].engaged_views, 120)
+    self.assertEqual(records[0].likes, 50)
+    self.assertEqual(records[0].subscribers_gained, 26)
+    self.assertEqual(records[0].comments, 2)
+    self.assertEqual(records[0].published_at, "2026-03-24")
 
   def test_read_raises_when_file_does_not_exist(self):
     path = Path("missing-title-features.csv")

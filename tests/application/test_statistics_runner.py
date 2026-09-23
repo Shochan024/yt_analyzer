@@ -21,7 +21,10 @@ def create_record(
   ctr: float | None = None,
   average_percentage_viewed: float | None = None,
   stayed_to_watch: float | None = None,
-  engaged_views: int | None = None
+  engaged_views: int | None = None,
+  likes: int | None = None,
+  subscribers_gained: int | None = None,
+  comments: int | None = None
 ) -> TitleFeaturesCsvRecord:
   return TitleFeaturesCsvRecord(
     video_id=video_id,
@@ -35,7 +38,10 @@ def create_record(
     ctr=ctr,
     average_percentage_viewed=average_percentage_viewed,
     stayed_to_watch=stayed_to_watch,
-    engaged_views=engaged_views
+    engaged_views=engaged_views,
+    likes=likes,
+    subscribers_gained=subscribers_gained,
+    comments=comments
   )
 
 
@@ -64,15 +70,15 @@ class StatisticsRunnerTest(unittest.TestCase):
     )
     self.path = Path("title_features.csv")
 
-  def test_run_long_uses_only_long_records_with_ctr(self):
+  def test_run_long_keeps_long_records_and_excludes_missing_targets(self):
     result = self.runner.run_long(self.path)
 
-    self.assertEqual(result.sample_size, 1)
+    self.assertEqual(result.sample_size, 2)
 
-    for correlation in result.correlations.values():
-      self.assertEqual(correlation.target_name, "ctr")
-      self.assertEqual(correlation.sample_size, 1)
-      self.assertIsNone(correlation.pearson)
+    correlation = result.correlations["ctr"]["length"]
+    self.assertEqual(correlation.target_name, "ctr")
+    self.assertEqual(correlation.sample_size, 1)
+    self.assertIsNone(correlation.pearson)
 
   def test_run_short_uses_only_short_records(self):
     result = self.runner.run_short(self.path)

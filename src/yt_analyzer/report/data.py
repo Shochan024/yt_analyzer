@@ -110,7 +110,10 @@ class ReportDataBuilder:
           row.get("average_percentage_viewed")
         ),
         "stayed_to_watch": self._number(row.get("stayed_to_watch")),
-        "engaged_views": self._number(row.get("engaged_views"))
+        "engaged_views": self._number(row.get("engaged_views")),
+        "likes": self._number(row.get("likes")),
+        "subscribers_gained": self._number(row.get("subscribers_gained")),
+        "comments": self._number(row.get("comments"))
       },
       "performance": {
         name: self._number(performance.get(name))

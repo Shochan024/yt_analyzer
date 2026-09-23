@@ -23,6 +23,10 @@ class TitleFeatureRecord:
   average_percentage_viewed: float | None
   stayed_to_watch: float | None
   engaged_views: int | None
+  likes: int | None = None
+  subscribers_gained: int | None = None
+  comments: int | None = None
+  published_at: str | None = None
   proper_nouns: tuple[str, ...] = ()
   unigram_top_words: tuple[ScoredText, ...] = ()
   contextual_top_tokens: tuple[ScoredText, ...] = ()
@@ -92,6 +96,10 @@ class TitleFeaturesRunner:
       average_percentage_viewed=video.average_percentage_viewed,
       stayed_to_watch=video.stayed_to_watch,
       engaged_views=video.engaged_views,
+      likes=video.likes,
+      subscribers_gained=video.subscribers_gained,
+      comments=video.comments,
+      published_at=video.published_at.date().isoformat(),
       proper_nouns=features.proper_nouns,
       unigram_top_words=features.unigram_top_words,
       contextual_top_tokens=features.contextual_top_tokens

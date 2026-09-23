@@ -43,8 +43,12 @@ class ShortAnalyzerTest(unittest.TestCase):
     )
 
     expected_target_names = {
+      "ctr",
       "stayed_to_watch",
       "average_percentage_viewed",
+      "likes",
+      "subscribers_gained",
+      "comments",
       "engaged_views"
     }
 

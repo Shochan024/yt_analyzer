@@ -13,6 +13,7 @@ class CorrelationResult:
   spearman_p_value: float | None
   sample_size: int
 
+
 @dataclass(frozen=True)
 class RegressionResult:
   feature_name: str
@@ -24,11 +25,19 @@ class RegressionResult:
   standard_error: float | None
   sample_size: int
 
+
 @dataclass(frozen=True)
 class LongAnalysisResult:
-  correlations: dict[str, CorrelationResult]
-  regressions: dict[str, RegressionResult]
+  correlations: dict[
+    str,
+    dict[str, CorrelationResult]
+  ]
+  regressions: dict[
+    str,
+    dict[str, RegressionResult]
+  ]
   sample_size: int
+
 
 @dataclass(frozen=True)
 class ShortAnalysisResult:

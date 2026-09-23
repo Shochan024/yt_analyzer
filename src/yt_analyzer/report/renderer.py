@@ -339,7 +339,7 @@ class ChannelReportRenderer:
       </div>
     </section>
 
-    <div class="note">数値が未取得または分析不能の場合は「—」と表示します。高surprisal表現は言語モデル内部のtoken単位であり、自然言語上の単語境界とは一致しない場合があります。</div>
+    <div class="note">数値が未取得または分析不能の場合は「—」と表示します。高surprisal表現は言語モデル内部のtoken単位であり、自然言語上の単語境界とは一致しない場合があります。高評価数・登録者増加数・コメント数は累積値のため、現時点では公開後経過日数や視聴回数について未補正の探索的分析です。</div>
   </main>
 
   <script>
@@ -357,11 +357,19 @@ class ChannelReportRenderer:
       };
       const targets = {
         long: {
-          ctr: "CTR"
+          ctr: "CTR",
+          average_percentage_viewed: "平均視聴率",
+          likes: "高評価数",
+          subscribers_gained: "登録者増加数",
+          comments: "コメント数"
         },
         short: {
+          ctr: "CTR",
           stayed_to_watch: "視聴継続率",
-          average_percentage_viewed: "平均再生率",
+          average_percentage_viewed: "平均視聴率",
+          likes: "高評価数",
+          subscribers_gained: "登録者増加数",
+          comments: "コメント数",
           engaged_views: "Engaged views"
         }
       };
@@ -438,14 +446,8 @@ class ChannelReportRenderer:
 
       function analysisForTarget() {
         const analysis = report.analysis[mode] || {};
-        if (mode === "long") {
-          return {
-            correlations: analysis.correlations || {},
-            regressions: analysis.regressions || {}
-          };
-        }
-
         const target = targetName();
+
         return {
           correlations: (analysis.correlations || {})[target] || {},
           regressions: (analysis.regressions || {})[target] || {}
@@ -937,6 +939,12 @@ class ChannelReportRenderer:
           ["最大日次視聴", fmt(video.performance.max_views_per_day, 0)],
           ["タイトル長", fmt(video.features.length, 0)],
           ["文脈 surprisal", fmt(video.features.mean_contextual_surprisal, 2)],
+          ["CTR", video.metrics.ctr === null ? "—" : pct(video.metrics.ctr)],
+          ["平均視聴率", video.metrics.average_percentage_viewed === null ? "—" : pct(video.metrics.average_percentage_viewed)],
+          ["視聴継続率", video.metrics.stayed_to_watch === null ? "—" : pct(video.metrics.stayed_to_watch)],
+          ["高評価数", fmt(video.metrics.likes, 0)],
+          ["登録者増加数", fmt(video.metrics.subscribers_gained, 0)],
+          ["コメント数", fmt(video.metrics.comments, 0)],
           ["固有名詞", formatTextDetails(details.proper_nouns)],
           ["Unigram寄与語", formatScoredDetails(details.unigram_top_words)],
           ["高surprisal表現", formatScoredDetails(details.contextual_top_tokens)]
