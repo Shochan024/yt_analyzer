@@ -32,7 +32,10 @@ class SpreadsheetAnalysisDataRepositoryTest(unittest.TestCase):
             "ctr": 5.2,
             "average_percentage_viewed": 43.5,
             "stayed_to_watch": "",
-            "engaged_views": 1000
+            "engaged_views": 1000,
+            "like": 12,
+            "increase_of_subscribers": 3,
+            "comments": 4
           }
         ]
       }
@@ -98,6 +101,18 @@ class SpreadsheetAnalysisDataRepositoryTest(unittest.TestCase):
     self.assertEqual(
       record.engaged_views,
       1000
+    )
+    self.assertEqual(
+      record.likes,
+      12
+    )
+    self.assertEqual(
+      record.subscribers_gained,
+      3
+    )
+    self.assertEqual(
+      record.comments,
+      4
     )
 
   def test_video_type_is_normalized(self):
