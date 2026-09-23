@@ -79,7 +79,7 @@ class ReaccelerationJsonWriter:
       data = json.load(file)
 
     if not isinstance(data, list):
-      raise ValueError(
+      raise TypeError(
         f"Expected list in reacceleration JSON: {path}"
       )
 
