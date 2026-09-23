@@ -36,7 +36,10 @@ class TitleFeaturesCsvWriter:
     )
 
     rows = [
-      asdict(record)
+      {
+        name: asdict(record).get(name)
+        for name in self.FIELD_NAMES
+      }
       for record in records
     ]
 

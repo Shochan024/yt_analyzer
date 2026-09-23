@@ -5,6 +5,9 @@ from pathlib import Path
 from ..config.settings import Settings
 from ..data.spreadsheet.client import SpreadsheetClient
 from ..data.spreadsheet.repository import SpreadsheetAnalysisDataRepository
+from ..output.title_feature_details_json_writer import (
+  TitleFeatureDetailsJsonWriter,
+)
 from ..output.title_features_csv_writer import TitleFeaturesCsvWriter
 from ..title.analyzer import TitleAnalyzer
 from ..title.contextual_surprisal import ContextualSurprisal
@@ -51,10 +54,18 @@ def run_title_features(video_id: str | None = None) -> Path:
 
   writer = TitleFeaturesCsvWriter()
 
+  upsert = video_id is not None
+
   writer.write(
     path=output_path,
     records=records,
-    upsert=video_id is not None
+    upsert=upsert
+  )
+
+  TitleFeatureDetailsJsonWriter().write(
+    path=settings.output_dir / "title_feature_details.json",
+    records=records,
+    upsert=upsert
   )
 
   return output_path

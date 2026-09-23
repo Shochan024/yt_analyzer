@@ -60,6 +60,21 @@ class TitleFeaturesTest(unittest.TestCase):
       ["神戸"]
     )
 
+  def test_proper_nouns_returns_unique_surfaces(self):
+    features = TitleFeatures(
+      title="神戸神戸観光",
+      tokens=[
+        create_token("神戸", "名詞", "固有名詞"),
+        create_token("神戸", "名詞", "固有名詞"),
+        create_token("観光", "名詞", "普通名詞")
+      ]
+    )
+
+    self.assertEqual(
+      features.proper_nouns,
+      ("神戸",)
+    )
+
   def test_proper_noun_count(self):
     self.assertEqual(
       self.features.proper_noun_count,
@@ -135,6 +150,36 @@ class TitleFeaturesTest(unittest.TestCase):
     self.assertEqual(
       features.number_count,
       0
+    )
+
+  def test_unigram_top_words_returns_highest_scores(self):
+    tokens = [
+      create_token("神戸", "名詞", "固有名詞"),
+      create_token("観光", "名詞", "普通名詞"),
+      create_token("旅行", "名詞", "普通名詞"),
+      create_token("温泉", "名詞", "普通名詞")
+    ]
+
+    estimator = FakeWordFrequencyEstimator({
+      "神戸": 0.01,
+      "観光": 0.1,
+      "旅行": 0.001,
+      "温泉": 0.005
+    })
+
+    features = TitleFeatures(
+      title="神戸観光旅行温泉",
+      tokens=tokens,
+      word_frequency_estimator=estimator
+    )
+
+    self.assertEqual(
+      [item.text for item in features.unigram_top_words],
+      ["旅行", "温泉", "神戸"]
+    )
+    self.assertGreater(
+      features.unigram_top_words[0].score,
+      features.unigram_top_words[1].score
     )
 
   def test_unigram_cross_entropy(self):

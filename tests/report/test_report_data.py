@@ -15,6 +15,7 @@ class ReportDataBuilderTest(unittest.TestCase):
       long_path = root / "long_analysis.json"
       short_path = root / "short_analysis.json"
       reacceleration_path = root / "reacceleration_points.json"
+      title_feature_details_path = root / "title_feature_details.json"
 
       title_path.write_text(
         "video_id,title,video_type,length,word_count,"
@@ -49,6 +50,29 @@ class ReportDataBuilderTest(unittest.TestCase):
         json.dumps({"correlations": {}, "regressions": {}, "sample_size": 1}),
         encoding="utf-8"
       )
+      title_feature_details_path.write_text(
+        json.dumps(
+          [
+            {
+              "video_id": "long-1",
+              "proper_nouns": ["神戸", "有馬温泉"],
+              "unigram_top_words": [
+                {
+                  "text": "じもみん",
+                  "score": 12.3
+                }
+              ],
+              "contextual_top_tokens": [
+                {
+                  "text": "不可避",
+                  "score": 9.4
+                }
+              ]
+            }
+          ]
+        ),
+        encoding="utf-8"
+      )
       reacceleration_path.write_text(
         json.dumps(
           [
@@ -77,6 +101,7 @@ class ReportDataBuilderTest(unittest.TestCase):
         long_analysis_path=long_path,
         short_analysis_path=short_path,
         reacceleration_path=reacceleration_path,
+        title_feature_details_path=title_feature_details_path,
         daily_metrics={
           "long-1": [
             {
@@ -106,6 +131,18 @@ class ReportDataBuilderTest(unittest.TestCase):
     self.assertEqual(
       data["videos"][0]["reacceleration_points"][0]["peak_strength_day"],
       12
+    )
+    self.assertEqual(
+      data["videos"][0]["feature_details"]["proper_nouns"],
+      ["神戸", "有馬温泉"]
+    )
+    self.assertEqual(
+      data["videos"][0]["feature_details"]["unigram_top_words"][0]["text"],
+      "じもみん"
+    )
+    self.assertEqual(
+      data["videos"][0]["feature_details"]["contextual_top_tokens"][0]["text"],
+      "不可避"
     )
     self.assertIsNone(
       data["videos"][1]["performance"]["cumulative_views_7d"]

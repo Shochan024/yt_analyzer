@@ -6,6 +6,7 @@ from zoneinfo import ZoneInfo
 from src.yt_analyzer.application.title_features_runner import TitleFeaturesRunner
 from src.yt_analyzer.data.model import DailyMetricRecord, VideoRecord, VideoType
 from src.yt_analyzer.data.repository import AnalysisDataRepository
+from src.yt_analyzer.title.features import ScoredText
 
 
 class FakeRepository(AnalysisDataRepository):
@@ -32,7 +33,14 @@ class FakeTitleAnalyzer:
       mean_contextual_surprisal=5.1,
       proper_noun_ratio=0.25,
       number_count=1,
-      unigram_cross_entropy=8.2
+      unigram_cross_entropy=8.2,
+      proper_nouns=("神戸",),
+      unigram_top_words=(
+        ScoredText(text="神戸", score=8.2),
+      ),
+      contextual_top_tokens=(
+        ScoredText(text="ある", score=6.3),
+      )
     )
 
 
@@ -172,6 +180,18 @@ class TitleFeaturesRunnerTest(unittest.TestCase):
     self.assertEqual(
       record.engaged_views,
       1200
+    )
+    self.assertEqual(
+      record.proper_nouns,
+      ("神戸",)
+    )
+    self.assertEqual(
+      record.unigram_top_words[0].text,
+      "神戸"
+    )
+    self.assertEqual(
+      record.contextual_top_tokens[0].text,
+      "ある"
     )
 
 

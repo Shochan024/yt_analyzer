@@ -1,7 +1,16 @@
-# src/yt_analyzer/title/contextual_surprisal.py
+import unicodedata
+from dataclasses import dataclass
 
 import torch
 from transformers import AutoModelForCausalLM, T5Tokenizer
+
+from .features import ScoredText
+
+
+@dataclass(frozen=True)
+class ContextualSurprisalResult:
+  mean: float
+  top_tokens: tuple[ScoredText, ...]
 
 
 class ContextualSurprisal:
@@ -20,38 +29,115 @@ class ContextualSurprisal:
     self._model = AutoModelForCausalLM.from_pretrained(model_name)
     self._model.eval()
 
-  def mean(self, text: str) -> float:
+  def analyze(
+    self,
+    text: str,
+    limit: int = 3
+  ) -> ContextualSurprisalResult:
     if not text:
-      return 0.0
+      return ContextualSurprisalResult(
+        mean=0.0,
+        top_tokens=()
+      )
 
     inputs = self._tokenizer(
       text,
-      return_tensors="pt",
+      return_tensors="pt"
     )
 
     input_ids = inputs["input_ids"]
 
     if input_ids.size(1) <= 1:
-      return 0.0
+      return ContextualSurprisalResult(
+        mean=0.0,
+        top_tokens=()
+      )
 
     with torch.no_grad():
-      outputs = self._model(input_ids=input_ids)
+      outputs = self._model(
+        input_ids=input_ids
+      )
 
-    # token_i を token_0 ... token_{i-1} から予測するため、
-    # logits と正解tokenを1つずらす
     shift_logits = outputs.logits[:, :-1, :]
     shift_labels = input_ids[:, 1:]
 
     log_probabilities = torch.log_softmax(
       shift_logits,
-      dim=-1,
+      dim=-1
     )
 
     token_log_probabilities = log_probabilities.gather(
       dim=-1,
-      index=shift_labels.unsqueeze(-1),
+      index=shift_labels.unsqueeze(-1)
     ).squeeze(-1)
 
     surprisals = -token_log_probabilities
+    top_tokens = self._top_tokens(
+      shift_labels=shift_labels,
+      surprisals=surprisals,
+      limit=limit
+    )
 
-    return surprisals.mean().item()
+    return ContextualSurprisalResult(
+      mean=surprisals.mean().item(),
+      top_tokens=top_tokens
+    )
+
+  def mean(self, text: str) -> float:
+    return self.analyze(
+      text=text,
+      limit=0
+    ).mean
+
+  def _top_tokens(
+    self,
+    shift_labels: torch.Tensor,
+    surprisals: torch.Tensor,
+    limit: int
+  ) -> tuple[ScoredText, ...]:
+    if limit <= 0:
+      return ()
+
+    scores = {}
+
+    for token_id, score in zip(
+      shift_labels[0].tolist(),
+      surprisals[0].tolist(),
+      strict=True
+    ):
+      text = self._tokenizer.decode(
+        [token_id],
+        skip_special_tokens=True
+      ).strip()
+
+      if not self._displayable(text):
+        continue
+
+      current = scores.get(text)
+
+      if current is None or score > current:
+        scores[text] = float(score)
+
+    return tuple(
+      ScoredText(
+        text=text,
+        score=score
+      )
+      for text, score in sorted(
+        scores.items(),
+        key=lambda item: (
+          -item[1],
+          item[0]
+        )
+      )[:limit]
+    )
+
+
+  def _displayable(self, text: str) -> bool:
+    if not text:
+      return False
+
+    return any(
+      unicodedata.category(character)[0] in {"L", "N"}
+      for character in text
+    )
