@@ -19,7 +19,7 @@ class ChannelReportRendererTest(unittest.TestCase):
           "metrics": {
             "ctr": 0.05,
             "average_percentage_viewed": 0.42,
-            "stayed_to_watch": null,
+            "stayed_to_watch": None,
             "likes": 28,
             "subscribers_gained": 7,
             "comments": 1
@@ -127,7 +127,7 @@ class ChannelReportRendererTest(unittest.TestCase):
     self.assertIn("click", html)
     self.assertIn("regression-line", html)
     self.assertIn("bar-zero", html)
-    self.assertIn('direction = numericValue !== null && numericValue < 0', html)
+    self.assertIn('direction = numericValue !== None && numericValue < 0', html)
     self.assertIn('id="feature-table"', html)
     self.assertIn('data-feature-sort="mean_contextual_surprisal"', html)
     self.assertIn("renderFeatureTable", html)
