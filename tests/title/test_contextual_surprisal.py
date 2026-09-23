@@ -103,5 +103,33 @@ class ContextualSurprisalTest(unittest.TestCase):
       result.top_tokens[1].score
     )
 
+  def test_analyze_excludes_symbol_only_tokens(self):
+    self.tokenizer.return_value = {
+      "input_ids": torch.tensor([[0, 1, 2]])
+    }
+    self.tokenizer.decode.side_effect = lambda token_ids, **_: {
+      1: "！",
+      2: "観光"
+    }[token_ids[0]]
+
+    outputs = Mock()
+    outputs.logits = torch.tensor([
+      [
+        [5.0, 0.0, 0.0],
+        [0.0, 0.0, 5.0],
+        [0.0, 0.0, 5.0]
+      ]
+    ])
+    self.model.return_value = outputs
+
+    result = self.contextual_surprisal.analyze(
+      "！観光"
+    )
+
+    self.assertEqual(
+      [item.text for item in result.top_tokens],
+      ["観光"]
+    )
+
   def test_model_is_set_to_eval_mode(self):
     self.model.eval.assert_called_once()
