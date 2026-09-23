@@ -17,7 +17,12 @@ class ChannelReportRendererTest(unittest.TestCase):
             "length": 20
           },
           "metrics": {
-            "ctr": 0.05
+            "ctr": 0.05,
+            "average_percentage_viewed": 0.42,
+            "stayed_to_watch": null,
+            "likes": 28,
+            "subscribers_gained": 7,
+            "comments": 1
           },
           "performance": {
             "cumulative_views_7d": 1000,
@@ -142,6 +147,11 @@ class ChannelReportRendererTest(unittest.TestCase):
     self.assertIn("高surprisal表現", html)
     self.assertIn("formatScoredDetails", html)
     self.assertIn("言語モデル内部のtoken単位", html)
+    self.assertIn("高評価数", html)
+    self.assertIn("登録者増加数", html)
+    self.assertIn("コメント数", html)
+    self.assertIn("未補正", html)
+    self.assertIn('average_percentage_viewed: "平均視聴率"', html)
 
 
 if __name__ == "__main__":
