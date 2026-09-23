@@ -368,8 +368,11 @@ r
 ~~~math
 \rho
 =
-\operatorname{corr}
-(\operatorname{rank}(X),\operatorname{rank}(Y))
+\mathrm{corr}
+\left(
+\mathrm{rank}(X),
+\mathrm{rank}(Y)
+\right)
 ~~~
 
 線形でなくても、単調増加・単調減少する関係を捉えられる場合があります。
