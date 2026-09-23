@@ -1,3 +1,4 @@
+import unicodedata
 from dataclasses import dataclass
 
 import torch
@@ -109,7 +110,7 @@ class ContextualSurprisal:
         skip_special_tokens=True
       ).strip()
 
-      if not text:
+      if not self._displayable(text):
         continue
 
       current = scores.get(text)
@@ -129,4 +130,14 @@ class ContextualSurprisal:
           item[0]
         )
       )[:limit]
+    )
+
+
+  def _displayable(self, text: str) -> bool:
+    if not text:
+      return False
+
+    return any(
+      unicodedata.category(character)[0] in {"L", "N"}
+      for character in text
     )
