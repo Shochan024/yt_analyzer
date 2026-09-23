@@ -64,7 +64,10 @@ def create_video(
     ctr=5.2 if video_type == VideoType.LONG else None,
     average_percentage_viewed=82.0,
     stayed_to_watch=70.0 if video_type == VideoType.SHORT else None,
-    engaged_views=1200 if video_type == VideoType.SHORT else None
+    engaged_views=1200 if video_type == VideoType.SHORT else None,
+    likes=13,
+    subscribers_gained=2,
+    comments=1
   )
 
 
@@ -180,6 +183,22 @@ class TitleFeaturesRunnerTest(unittest.TestCase):
     self.assertEqual(
       record.engaged_views,
       1200
+    )
+    self.assertEqual(
+      record.likes,
+      13
+    )
+    self.assertEqual(
+      record.subscribers_gained,
+      2
+    )
+    self.assertEqual(
+      record.comments,
+      1
+    )
+    self.assertEqual(
+      record.published_at,
+      "2026-09-20"
     )
     self.assertEqual(
       record.proper_nouns,
