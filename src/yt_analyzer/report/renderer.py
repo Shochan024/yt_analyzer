@@ -339,7 +339,7 @@ class ChannelReportRenderer:
       </div>
     </section>
 
-    <div class="note">数値が未取得または分析不能の場合は「—」と表示します。</div>
+    <div class="note">数値が未取得または分析不能の場合は「—」と表示します。高surprisal表現は言語モデル内部のtoken単位であり、自然言語上の単語境界とは一致しない場合があります。</div>
   </main>
 
   <script>
@@ -899,6 +899,19 @@ class ChannelReportRenderer:
         });
       }
 
+      function formatScoredDetails(items) {
+        if (!items || items.length === 0) return "—";
+
+        return items.map(item =>
+          `${item.text} (${fmt(item.score, 2)})`
+        ).join(" / ");
+      }
+
+      function formatTextDetails(items) {
+        if (!items || items.length === 0) return "—";
+        return items.join(" / ");
+      }
+
       function selectVideo(video) {
         selectedVideo = video;
         byId("detail-title").textContent = video.title;
@@ -910,6 +923,7 @@ class ChannelReportRenderer:
 
         renderCumulativeChart();
         const target = targets[mode][targetName()];
+        const details = video.feature_details || {};
         const values = [
           ["動画ID", video.video_id],
           [target, fmt(targetValue(video))],
@@ -922,7 +936,10 @@ class ChannelReportRenderer:
           ["Long tail", video.performance.long_tail_ratio === null ? "—" : pct(video.performance.long_tail_ratio)],
           ["最大日次視聴", fmt(video.performance.max_views_per_day, 0)],
           ["タイトル長", fmt(video.features.length, 0)],
-          ["文脈 surprisal", fmt(video.features.mean_contextual_surprisal, 2)]
+          ["文脈 surprisal", fmt(video.features.mean_contextual_surprisal, 2)],
+          ["固有名詞", formatTextDetails(details.proper_nouns)],
+          ["Unigram寄与語", formatScoredDetails(details.unigram_top_words)],
+          ["高surprisal表現", formatScoredDetails(details.contextual_top_tokens)]
         ];
 
         byId("detail").innerHTML = values.map(([label, value]) =>
