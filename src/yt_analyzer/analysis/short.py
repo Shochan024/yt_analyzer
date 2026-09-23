@@ -22,7 +22,8 @@ class ShortAnalyzer:
     "average_percentage_viewed",
     "likes",
     "subscribers_gained",
-    "comments"
+    "comments",
+    "engaged_views"
   )
 
   def __init__(
