@@ -17,10 +17,10 @@ class TitleFeaturesCsvRecord:
   average_percentage_viewed: float | None
   stayed_to_watch: float | None
   engaged_views: int | None
-  likes: int | None
-  subscribers_gained: int | None
-  comments: int | None
-  published_at: str | None
+  likes: int | None = None
+  subscribers_gained: int | None = None
+  comments: int | None = None
+  published_at: str | None = None
 
 
 class TitleFeaturesCsvReader:
