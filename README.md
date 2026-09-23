@@ -305,6 +305,32 @@ VIF_j
 
 ---
 
+## 6.1 タイトル特徴量の寄与語
+
+集計値だけでなく、各特徴量を押し上げた語・表現も補助情報として保持します。
+
+```text
+proper_nouns
+unigram_top_words
+contextual_top_tokens
+```
+
+`unigram_top_words` は単語ごとの `-log P(word)` が高い順に上位3件、
+`contextual_top_tokens` はCausal LMのtoken別surprisalが高い順に上位3件です。
+
+可変長データは `title_features.csv` には追加せず、
+
+```text
+output/title_feature_details.json
+```
+
+へ出力します。
+
+contextual surprisalのtokenはモデル内部のtoken単位であり、
+自然言語上の単語境界と一致しない場合があります。
+
+---
+
 # 7. Long / Short分析
 
 LongとShortでは視聴導線が異なるため、別々に分析します。
