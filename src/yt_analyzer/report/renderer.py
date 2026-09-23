@@ -369,7 +369,8 @@ class ChannelReportRenderer:
           average_percentage_viewed: "平均視聴率",
           likes: "高評価数",
           subscribers_gained: "登録者増加数",
-          comments: "コメント数"
+          comments: "コメント数",
+          engaged_views: "Engaged views"
         }
       };
 
