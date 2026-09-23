@@ -21,10 +21,11 @@ class ReportDataBuilderTest(unittest.TestCase):
         "video_id,title,video_type,length,word_count,"
         "mean_contextual_surprisal,proper_noun_ratio,number_count,"
         "unigram_cross_entropy,ctr,average_percentage_viewed,"
-        "stayed_to_watch,engaged_views\n"
-        "long-1,Long 1,long,20,8,4.5,0.2,1,9.0,0.04,,,\n"
-        "long-2,Long 2,long,24,10,4.8,0.1,0,9.4,0.06,,,\n"
-        "short-1,Short 1,short,18,7,5.0,0.3,1,10.0,,0.55,0.65,120\n",
+        "stayed_to_watch,engaged_views,likes,subscribers_gained,"
+        "comments,published_at\n"
+        "long-1,Long 1,long,20,8,4.5,0.2,1,9.0,0.04,0.37,,,28,7,1,2026-06-22\n"
+        "long-2,Long 2,long,24,10,4.8,0.1,0,9.4,0.06,0.29,,,14,4,2,2026-08-21\n"
+        "short-1,Short 1,short,18,7,5.0,0.3,1,10.0,0.07,0.55,0.65,120,13,0,1,2026-09-19\n",
         encoding="utf-8"
       )
 
@@ -146,6 +147,18 @@ class ReportDataBuilderTest(unittest.TestCase):
     )
     self.assertIsNone(
       data["videos"][1]["performance"]["cumulative_views_7d"]
+    )
+    self.assertEqual(
+      data["videos"][0]["metrics"]["likes"],
+      28
+    )
+    self.assertEqual(
+      data["videos"][0]["metrics"]["subscribers_gained"],
+      7
+    )
+    self.assertEqual(
+      data["videos"][0]["metrics"]["comments"],
+      1
     )
     self.assertEqual(data["kpis"]["long"]["video_count"], 2)
     self.assertAlmostEqual(data["kpis"]["long"]["average_ctr"], 0.05)
