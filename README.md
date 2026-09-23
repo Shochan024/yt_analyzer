@@ -337,10 +337,14 @@ LongとShortでは視聴導線が異なるため、別々に分析します。
 
 ## Long
 
-主目的変数:
+目的変数:
 
 ```text
-CTR
+ctr
+average_percentage_viewed
+likes
+subscribers_gained
+comments
 ```
 
 説明変数:
@@ -368,15 +372,23 @@ Spearman相関
 
 ## Short
 
-候補となる目的変数:
+目的変数:
 
 ```text
+ctr
 stayed_to_watch
 average_percentage_viewed
+likes
+subscribers_gained
+comments
 engaged_views
 ```
 
 Shortについてはタイトル特徴量の説明力がLongより弱い可能性があるため、Longとは混ぜずに評価します。
+
+`likes`、`subscribers_gained`、`comments` は累積値であり、
+公開後経過日数や視聴回数の影響を受けます。
+現時点では探索的な未補正分析として扱い、因果的・確定的な解釈は行いません。
 
 ---
 
@@ -829,6 +841,9 @@ ctr
 average_percentage_viewed
 stayed_to_watch
 engaged_views
+likes
+subscribers_gained
+comments
 ```
 
 `video_type` は、
