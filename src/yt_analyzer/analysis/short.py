@@ -17,15 +17,18 @@ class ShortAnalyzer:
   )
 
   TARGET_NAMES = (
+    "ctr",
     "stayed_to_watch",
     "average_percentage_viewed",
-    "engaged_views"
+    "likes",
+    "subscribers_gained",
+    "comments"
   )
 
   def __init__(
     self,
     correlation_analyzer: CorrelationAnalyzer | None = None,
-    regression_analyzer: SimpleRegressionAnalyzer | None = None,
+    regression_analyzer: SimpleRegressionAnalyzer | None = None
   ) -> None:
     self._correlation_analyzer = (
       correlation_analyzer
@@ -39,7 +42,7 @@ class ShortAnalyzer:
 
   def analyze(
     self,
-    records: list[ShortAnalysisRecord],
+    records: list[ShortAnalysisRecord]
   ) -> ShortAnalysisResult:
     correlations = {}
     regressions = {}
