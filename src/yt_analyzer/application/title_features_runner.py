@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from ..data.model import VideoRecord
 from ..data.repository import AnalysisDataRepository
 from ..title.analyzer import TitleAnalyzer
+from ..title.features import ScoredText
 
 
 @dataclass(frozen=True)
@@ -22,6 +23,9 @@ class TitleFeatureRecord:
   average_percentage_viewed: float | None
   stayed_to_watch: float | None
   engaged_views: int | None
+  proper_nouns: tuple[str, ...] = ()
+  unigram_top_words: tuple[ScoredText, ...] = ()
+  contextual_top_tokens: tuple[ScoredText, ...] = ()
 
 
 class TitleFeaturesRunner:
@@ -87,5 +91,8 @@ class TitleFeaturesRunner:
       ctr=video.ctr,
       average_percentage_viewed=video.average_percentage_viewed,
       stayed_to_watch=video.stayed_to_watch,
-      engaged_views=video.engaged_views
+      engaged_views=video.engaged_views,
+      proper_nouns=features.proper_nouns,
+      unigram_top_words=features.unigram_top_words,
+      contextual_top_tokens=features.contextual_top_tokens
     )
