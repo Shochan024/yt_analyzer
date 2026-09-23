@@ -21,6 +21,9 @@ class VideoRecord:
   average_percentage_viewed: float | None
   stayed_to_watch: float | None
   engaged_views: int | None
+  likes: int | None = None
+  subscribers_gained: int | None = None
+  comments: int | None = None
 
 
 @dataclass(frozen=True)
