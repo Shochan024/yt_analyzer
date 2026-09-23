@@ -50,7 +50,8 @@ class ReportDataBuilder:
     long_analysis_path: Path,
     short_analysis_path: Path,
     daily_metrics: dict[str, list[dict[str, int]]] | None = None,
-    reacceleration_path: Path | None = None
+    reacceleration_path: Path | None = None,
+    title_feature_details_path: Path | None = None
   ) -> dict[str, object]:
     title_rows = self._read_csv(title_features_path)
     performance_rows = {
@@ -60,13 +61,17 @@ class ReportDataBuilder:
     reacceleration_rows = self._read_reacceleration(
       reacceleration_path
     )
+    title_feature_details = self._read_title_feature_details(
+      title_feature_details_path
+    )
 
     videos = [
       self._video(
         row,
         performance_rows.get(row["video_id"]),
         (daily_metrics or {}).get(row["video_id"], []),
-        reacceleration_rows.get(row["video_id"], [])
+        reacceleration_rows.get(row["video_id"], []),
+        title_feature_details.get(row["video_id"], {})
       )
       for row in title_rows
     ]
@@ -88,7 +93,8 @@ class ReportDataBuilder:
     row: dict[str, str],
     performance: dict[str, str] | None,
     daily_metrics: list[dict[str, int]],
-    reacceleration_points: list[dict[str, object]]
+    reacceleration_points: list[dict[str, object]],
+    feature_details: dict[str, object]
   ) -> dict[str, object]:
     return {
       "video_id": row["video_id"],
@@ -113,7 +119,8 @@ class ReportDataBuilder:
         for name in self.PERFORMANCE_FIELDS
       },
       "daily_metrics": daily_metrics,
-      "reacceleration_points": reacceleration_points
+      "reacceleration_points": reacceleration_points,
+      "feature_details": feature_details
     }
 
   def _long_kpis(
@@ -230,6 +237,28 @@ class ReportDataBuilder:
       str(row["video_id"]): list(
         row.get("reacceleration_points", [])
       )
+      for row in rows
+    }
+
+  def _read_title_feature_details(
+    self,
+    path: Path | None
+  ) -> dict[str, dict[str, object]]:
+    if path is None or not path.exists():
+      return {}
+
+    with path.open(
+      "r",
+      encoding="utf-8"
+    ) as file:
+      rows = json.load(file)
+
+    return {
+      str(row["video_id"]): {
+        "proper_nouns": list(row.get("proper_nouns", [])),
+        "unigram_top_words": list(row.get("unigram_top_words", [])),
+        "contextual_top_tokens": list(row.get("contextual_top_tokens", []))
+      }
       for row in rows
     }
 
