@@ -7,7 +7,7 @@ YouTube動画のタイトル特徴量・CTR・日次視聴推移などを定量�
 * タイトルの情報量・具体性・語彙的希少性の定量化
 * Long / Short を分離したパフォーマンス分析
 * CTRとの相関・単回帰分析
-* 日次視聴回数から初速・ピーク・breakpoint・減衰・ロングテールを算出
+* 日次視聴回数から初速・初動終了点・再加速・ピーク・ロングテールを算出
 * Google Spreadsheetから分析対象データを取得
 * 将来的なRDB / NoSQLなどへのデータソース拡張
 
@@ -24,7 +24,9 @@ CTR
     ↓
 初速
     ↓
-breakpoint
+initial breakpoint
+    ↓
+再加速 / ロングテール
     ↓
 固定窓累積視聴回数
 ```
@@ -34,7 +36,8 @@ breakpoint
 1. タイトルがクリック率に影響する
 2. CTRが公開直後の視聴速度に影響する
 3. 初速から減速・平坦化へ移行する
-4. その結果として一定期間後の累積視聴回数が決まる
+4. その後の再加速やロングテールを観測する
+5. その結果として一定期間後の累積視聴回数が決まる
 
 という段階的な関係を分析します。
 
@@ -302,16 +305,46 @@ VIF_j
 
 ---
 
+## 6.1 タイトル特徴量の寄与語
+
+集計値だけでなく、各特徴量を押し上げた語・表現も補助情報として保持します。
+
+```text
+proper_nouns
+unigram_top_words
+contextual_top_tokens
+```
+
+`unigram_top_words` は単語ごとの `-log P(word)` が高い順に上位3件、
+`contextual_top_tokens` はCausal LMのtoken別surprisalが高い順に上位3件です。
+
+可変長データは `title_features.csv` には追加せず、
+
+```text
+output/title_feature_details.json
+```
+
+へ出力します。
+
+contextual surprisalのtokenはモデル内部のtoken単位であり、
+自然言語上の単語境界と一致しない場合があります。
+
+---
+
 # 7. Long / Short分析
 
 LongとShortでは視聴導線が異なるため、別々に分析します。
 
 ## Long
 
-主目的変数:
+目的変数:
 
 ```text
-CTR
+ctr
+average_percentage_viewed
+likes
+subscribers_gained
+comments
 ```
 
 説明変数:
@@ -339,15 +372,23 @@ Spearman相関
 
 ## Short
 
-候補となる目的変数:
+目的変数:
 
 ```text
+ctr
 stayed_to_watch
 average_percentage_viewed
+likes
+subscribers_gained
+comments
 engaged_views
 ```
 
 Shortについてはタイトル特徴量の説明力がLongより弱い可能性があるため、Longとは混ぜずに評価します。
+
+`likes`、`subscribers_gained`、`comments` は累積値であり、
+公開後経過日数や視聴回数の影響を受けます。
+現時点では探索的な未補正分析として扱い、因果的・確定的な解釈は行いません。
 
 ---
 
@@ -506,19 +547,18 @@ cumulative\_views\_10d
 
 ---
 
-# 12. breakpoint
+# 12. initial breakpoint
 
-breakpointは、
+既存の `breakpoint` は、
 
-> 公開直後の視聴推移が減速・平坦化し始める境界
+> 公開直後の初動が終わり、低下・平坦化へ移行する境界
 
-として定義します。
+として扱います。
 
-各動画ごとに独立して算出します。
+互換性維持のため `breakpoint_day` は残しつつ、
+同じ値を `initial_breakpoint_day` として明示的に出力します。
 
-動画Aと動画Bのデータを混ぜて共通係数を算出することはありません。
-
-分析窓は公開後30日です。
+各動画ごとに独立して算出し、分析窓は公開後30日です。
 
 ---
 
@@ -574,7 +614,7 @@ RSS_{\mathrm{post}}(k)
 最終的に、
 
 ```math
-breakpoint
+initial\_breakpoint
 =
 \arg\min_k RSS(k)
 ```
@@ -583,12 +623,13 @@ breakpoint
 
 ---
 
-# 13. breakpoint関連特徴量
+# 13. initial breakpoint関連特徴量
 
 現在は以下を算出します。
 
 ```text
 breakpoint_day
+initial_breakpoint_day
 views_at_breakpoint
 pre_break_slope
 post_break_slope
@@ -596,19 +637,17 @@ decay_ratio
 long_tail_ratio
 ```
 
+`breakpoint_day` と `initial_breakpoint_day` は現在同じ値です。
+
 ## pre_break_slope
 
-breakpoint以前の回帰直線の傾きです。
-
-初速の強さを表す特徴量として利用できます。
+initial breakpoint以前の回帰直線の傾きです。
 
 ---
 
 ## post_break_slope
 
-breakpoint後の回帰直線の傾きです。
-
-負の値であれば、日次視聴回数が減少傾向にあることを示します。
+initial breakpoint後の回帰直線の傾きです。
 
 ---
 
@@ -618,15 +657,13 @@ breakpoint後の回帰直線の傾きです。
 decay\_ratio
 =
 \frac{
-\text{breakpoint後の平均日次視聴数}
+\text{initial breakpoint後の平均日次視聴数}
 }{
-\text{breakpoint以前の平均日次視聴数}
+\text{initial breakpoint以前の平均日次視聴数}
 }
 ```
 
 です。
-
-視聴水準がどの程度低下したかを表します。
 
 ---
 
@@ -636,7 +673,7 @@ decay\_ratio
 long\_tail\_ratio
 =
 \frac{
-\text{breakpoint後の累積視聴数}
+\text{initial breakpoint後の累積視聴数}
 }{
 \text{全観測期間の累積視聴数}
 }
@@ -644,31 +681,111 @@ long\_tail\_ratio
 
 です。
 
-動画の総視聴回数のうち、初速終了後にどの程度獲得したかを表します。
+---
+
+# 14. 再加速・再燃の評価
+
+initial breakpoint後に日次視聴回数が再び持続的に増加する場合、
+その変化を `reacceleration_points` として複数件保持します。
+
+検出では、
+
+```text
+日次視聴回数
+↓
+移動平均で平滑化
+↓
+前後ウィンドウの局所回帰
+↓
+傾きの上昇
+↓
+平均視聴水準の上昇
+↓
+複数日継続
+↓
+近接候補を1イベントへ統合
+```
+
+という流れを利用します。
+
+各再加速イベントは、
+
+```text
+start_day
+start_views
+peak_strength_day
+peak_strength_views
+slope_before
+slope_after
+strength
+```
+
+を持ちます。
+
+`start_day` は再加速イベントとして成立した最初の日です。
+`peak_strength_day` は、そのイベント内で傾き変化が最大になった日です。
+
+`slope_before` / `slope_after` / `strength` は
+`peak_strength_day` 時点の局所回帰から算出します。
+
+`strength` は、
+
+```math
+strength
+=
+slope_{after}
+-
+slope_{before}
+```
+
+です。
+
+複数イベントのうち `strength` 最大のものを
+`primary_reacceleration` として扱います。
+
+`performance.csv` には、
+
+```text
+reacceleration_count
+primary_reacceleration_day
+primary_reacceleration_views
+primary_reacceleration_peak_strength_day
+primary_reacceleration_strength
+```
+
+を出力します。
+
+複数イベントの詳細は、
+
+```text
+output/reacceleration_points.json
+```
+
+へ出力します。
 
 ---
 
-# 14. 再燃の評価
+## post-break peak
 
 初期ピークは、
 
 ```math
 initial\_peak
 =
-\max_{t \le breakpoint}v_t
+\max_{t \le initial\_breakpoint}v_t
 ```
 
-とします。
+です。
 
-breakpoint後ピークは、
+initial breakpoint後の最大日次視聴回数を、
 
 ```math
 post\_break\_peak
 =
-\max_{t>breakpoint}v_t
+\max_{t>initial\_breakpoint}v_t
 ```
 
-です。
+とします。
 
 再燃の強さは、
 
@@ -683,20 +800,6 @@ initial\_peak
 ```
 
 で評価します。
-
-例えば、
-
-```text
-post_break_peak_ratio = 0.5
-```
-
-なら、breakpoint後最大値は初期ピークの50%です。
-
-```text
-post_break_peak_ratio = 1.5
-```
-
-なら、breakpoint後に初期ピークを50%上回る再燃が発生したことを示します。
 
 ---
 
@@ -738,6 +841,9 @@ ctr
 average_percentage_viewed
 stayed_to_watch
 engaged_views
+likes
+subscribers_gained
+comments
 ```
 
 `video_type` は、

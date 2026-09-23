@@ -35,9 +35,14 @@ class SpreadsheetAnalysisDataRepository(AnalysisDataRepository):
         record
       )
       for record in records
-      if str(
-        record.get("video_id", "")
-      ) == video_id
+      if (
+        str(
+          record.get("video_id", "")
+        ) == video_id
+        and not self._blank(
+          record.get("elapsed_day")
+        )
+      )
     ]
 
     return sorted(
@@ -70,6 +75,18 @@ class SpreadsheetAnalysisDataRepository(AnalysisDataRepository):
       ),
       engaged_views=self._optional_int(
         record.get("engaged_views")
+      ),
+      likes=self._optional_int(
+        record.get("likes", record.get("like"))
+      ),
+      subscribers_gained=self._optional_int(
+        record.get(
+          "subscribers_gained",
+          record.get("increase_of_subscribers")
+        )
+      ),
+      comments=self._optional_int(
+        record.get("comments")
       )
     )
 

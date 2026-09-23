@@ -21,6 +21,9 @@ scipy = "*"
 gspread = "*"
 google-auth = "*"
 pandas = "*"
+wordfreq = "*"
+mecab-python3 = "*"
+ipadic = "*"
 
 [dev-packages]
 
