@@ -75,6 +75,18 @@ class SpreadsheetAnalysisDataRepository(AnalysisDataRepository):
       ),
       engaged_views=self._optional_int(
         record.get("engaged_views")
+      ),
+      likes=self._optional_int(
+        record.get("likes", record.get("like"))
+      ),
+      subscribers_gained=self._optional_int(
+        record.get(
+          "subscribers_gained",
+          record.get("increase_of_subscribers")
+        )
+      ),
+      comments=self._optional_int(
+        record.get("comments")
       )
     )
 
