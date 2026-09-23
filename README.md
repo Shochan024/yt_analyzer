@@ -349,7 +349,7 @@ engaged_views
 ~~~math
 r
 =
-\frac{\operatorname{cov}(X,Y)}
+\frac{\mathrm{cov}(X,Y)}
 {\sigma_X\sigma_Y}
 ~~~
 
@@ -517,9 +517,9 @@ Breakpoint前後の日次視聴水準の変化を、
 decay\_ratio
 =
 \frac{
-\operatorname{mean}(v_t \mid t > k^*)
+\mathrm{mean}(v_t \mid t > k^*)
 }{
-\operatorname{mean}(v_t \mid t \le k^*)
+\mathrm{mean}(v_t \mid t \le k^*)
 }
 ~~~
 
