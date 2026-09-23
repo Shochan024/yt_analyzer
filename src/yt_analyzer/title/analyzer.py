@@ -21,8 +21,8 @@ class TitleAnalyzer:
       title
     )
 
-    mean_contextual_surprisal = (
-      self._contextual_surprisal.mean(
+    contextual_result = (
+      self._contextual_surprisal.analyze(
         title
       )
       if self._contextual_surprisal
@@ -33,5 +33,14 @@ class TitleAnalyzer:
       title=title,
       tokens=tokens,
       word_frequency_estimator=self._word_frequency_estimator,
-      mean_contextual_surprisal=mean_contextual_surprisal
+      mean_contextual_surprisal=(
+        contextual_result.mean
+        if contextual_result is not None
+        else None
+      ),
+      contextual_top_tokens=(
+        contextual_result.top_tokens
+        if contextual_result is not None
+        else ()
+      )
     )
