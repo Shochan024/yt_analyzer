@@ -30,6 +30,21 @@ class ChannelReportRendererTest(unittest.TestCase):
             "long_tail_ratio": 0.4,
             "max_views_per_day": 500
           },
+          "feature_details": {
+            "proper_nouns": ["神戸", "有馬温泉"],
+            "unigram_top_words": [
+              {
+                "text": "じもみん",
+                "score": 12.3
+              }
+            ],
+            "contextual_top_tokens": [
+              {
+                "text": "不可避",
+                "score": 9.4
+              }
+            ]
+          },
           "reacceleration_points": [
             {
               "start_day": 5,
@@ -122,6 +137,11 @@ class ChannelReportRendererTest(unittest.TestCase):
     self.assertIn("primary_reacceleration_peak_strength_day", html)
     self.assertIn("初動終了", html)
     self.assertIn("再加速", html)
+    self.assertIn("固有名詞", html)
+    self.assertIn("Unigram寄与語", html)
+    self.assertIn("高surprisal表現", html)
+    self.assertIn("formatScoredDetails", html)
+    self.assertIn("言語モデル内部のtoken単位", html)
 
 
 if __name__ == "__main__":
