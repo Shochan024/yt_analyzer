@@ -16,6 +16,14 @@ class LongAnalyzer:
     "unigram_cross_entropy"
   )
 
+  TARGET_NAMES = (
+    "ctr",
+    "average_percentage_viewed",
+    "likes",
+    "subscribers_gained",
+    "comments"
+  )
+
   def __init__(
     self,
     correlation_analyzer: CorrelationAnalyzer | None = None,
@@ -32,45 +40,70 @@ class LongAnalyzer:
 
   def analyze(
     self,
-    records: list[LongAnalysisRecord],
+    records: list[LongAnalysisRecord]
   ) -> LongAnalysisResult:
-    ctr_values = [
-      record.ctr
-      for record in records
-    ]
-
     correlations = {}
     regressions = {}
 
-    for feature_name in self.FEATURE_NAMES:
-      feature_values = [
-        getattr(
-          record.title_features,
-          feature_name
-        )
-        for record in records
-      ]
+    for target_name in self.TARGET_NAMES:
+      correlations[target_name] = {}
+      regressions[target_name] = {}
 
-      correlations[feature_name] = (
-        self._correlation_analyzer.analyze(
-          x=feature_values,
-          y=ctr_values,
+      for feature_name in self.FEATURE_NAMES:
+        x, y = self._extract_values(
+          records=records,
           feature_name=feature_name,
-          target_name="ctr"
+          target_name=target_name
         )
-      )
 
-      regressions[feature_name] = (
-        self._regression_analyzer.analyze(
-          x=feature_values,
-          y=ctr_values,
-          feature_name=feature_name,
-          target_name="ctr"
+        correlations[target_name][feature_name] = (
+          self._correlation_analyzer.analyze(
+            x=x,
+            y=y,
+            feature_name=feature_name,
+            target_name=target_name
+          )
         )
-      )
+
+        regressions[target_name][feature_name] = (
+          self._regression_analyzer.analyze(
+            x=x,
+            y=y,
+            feature_name=feature_name,
+            target_name=target_name
+          )
+        )
 
     return LongAnalysisResult(
       correlations=correlations,
       regressions=regressions,
       sample_size=len(records)
     )
+
+  def _extract_values(
+    self,
+    records: list[LongAnalysisRecord],
+    feature_name: str,
+    target_name: str
+  ) -> tuple[list[float], list[float]]:
+    x = []
+    y = []
+
+    for record in records:
+      target_value = getattr(
+        record,
+        target_name
+      )
+
+      if target_value is None:
+        continue
+
+      feature_value = getattr(
+        record.title_features,
+        feature_name
+      )
+
+      x.append(float(feature_value))
+      y.append(float(target_value))
+
+    return x, y
