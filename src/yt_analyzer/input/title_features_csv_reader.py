@@ -17,6 +17,10 @@ class TitleFeaturesCsvRecord:
   average_percentage_viewed: float | None
   stayed_to_watch: float | None
   engaged_views: int | None
+  likes: int | None
+  subscribers_gained: int | None
+  comments: int | None
+  published_at: str | None
 
 
 class TitleFeaturesCsvReader:
@@ -49,7 +53,13 @@ class TitleFeaturesCsvReader:
         row.get("average_percentage_viewed")
       ),
       stayed_to_watch=self._optional_float(row.get("stayed_to_watch")),
-      engaged_views=self._optional_int(row.get("engaged_views"))
+      engaged_views=self._optional_int(row.get("engaged_views")),
+      likes=self._optional_int(row.get("likes")),
+      subscribers_gained=self._optional_int(
+        row.get("subscribers_gained")
+      ),
+      comments=self._optional_int(row.get("comments")),
+      published_at=self._optional_string(row.get("published_at"))
     )
 
   def _optional_float(self, value: str | None) -> float | None:
@@ -63,3 +73,10 @@ class TitleFeaturesCsvReader:
       return None
 
     return int(value)
+
+
+  def _optional_string(self, value: str | None) -> str | None:
+    if value is None or not value.strip():
+      return None
+
+    return value.strip()
