@@ -21,7 +21,11 @@ class TitleFeaturesCsvWriter:
     "ctr",
     "average_percentage_viewed",
     "stayed_to_watch",
-    "engaged_views"
+    "engaged_views",
+    "likes",
+    "subscribers_gained",
+    "comments",
+    "published_at"
   )
 
   def write(
