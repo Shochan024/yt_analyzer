@@ -63,3 +63,14 @@ class PerformanceResultTest(unittest.TestCase):
       result.observed_days,
       10
     )
+    self.assertIsNone(
+      result.initial_breakpoint_day
+    )
+    self.assertEqual(
+      result.reacceleration_points,
+      ()
+    )
+    self.assertEqual(
+      result.reacceleration_count,
+      0
+    )

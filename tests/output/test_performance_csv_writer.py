@@ -68,6 +68,10 @@ class PerformanceCsvWriterTest(unittest.TestCase):
     self.assertEqual(len(rows), 2)
     self.assertEqual(rows[0]["video_id"], "video-1")
     self.assertEqual(rows[0]["total_views"], "300")
+    self.assertEqual(rows[0]["reacceleration_count"], "0")
+    self.assertIn("initial_breakpoint_day", rows[0])
+    self.assertIn("primary_reacceleration_day", rows[0])
+    self.assertIn("primary_reacceleration_peak_strength_day", rows[0])
     self.assertEqual(
       list(rows[0].keys()),
       list(PerformanceCsvWriter.FIELD_NAMES)

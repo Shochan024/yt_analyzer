@@ -139,6 +139,32 @@ class ChannelReportRenderer:
       vertical-align: middle;
       border-top: 2px dashed var(--accent);
     }
+    .legend-reacceleration {
+      display: inline-block;
+      width: 22px;
+      height: 0;
+      margin-right: 6px;
+      vertical-align: middle;
+      border-top: 2px dotted var(--series2);
+    }
+    .legend-acceleration-peak {
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      margin: 0 7px 0 2px;
+      vertical-align: middle;
+      background: var(--series2);
+      transform: rotate(45deg);
+    }
+    .legend-peak {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      margin-right: 6px;
+      vertical-align: middle;
+      border: 2px solid var(--text);
+      border-radius: 50%;
+    }
     .bottom-grid { display: grid; grid-template-columns: 1fr 1.35fr; gap: 16px; margin-top: 16px; }
     .bars { display: grid; gap: 11px; margin-top: 16px; }
     .bar-row { display: grid; grid-template-columns: 145px 1fr 54px; gap: 10px; align-items: center; font-size: 13px; }
@@ -248,7 +274,7 @@ class ChannelReportRenderer:
       <div class="section-head">
         <div>
           <h2>選択動画の累積視聴推移</h2>
-          <div class="muted">各点は1日分です。breakpointは日次視聴回数から検出した日を、累積曲線上に表示します。</div>
+          <div class="muted">各点は1日分です。初動終了・再加速・再ピークは日次視聴回数から検出し、累積曲線上に重ねて表示します。</div>
         </div>
         <select id="cumulative-video-select" class="control" aria-label="表示する動画"></select>
       </div>
@@ -258,7 +284,10 @@ class ChannelReportRenderer:
       </div>
       <div class="chart-legend">
         <span><span class="legend-line"></span>cumulative_views</span>
-        <span><span class="legend-breakpoint"></span>breakpoint</span>
+        <span><span class="legend-breakpoint"></span>初動終了</span>
+        <span><span class="legend-reacceleration"></span>再加速開始</span>
+        <span><span class="legend-acceleration-peak"></span>最大加速</span>
+        <span><span class="legend-peak"></span>post-break peak</span>
       </div>
     </section>
 
@@ -279,7 +308,7 @@ class ChannelReportRenderer:
                 <th>動画</th>
                 <th id="target-header">成果指標</th>
                 <th>7日視聴</th>
-                <th>breakpoint</th>
+                <th>初動終了</th>
                 <th>long tail</th>
               </tr>
             </thead>
@@ -565,7 +594,7 @@ class ChannelReportRenderer:
             <td><button type="button" class="video-button" data-video-id="${escapeHtml(video.video_id)}">${escapeHtml(video.title)}</button></td>
             <td>${fmt(targetValue(video, target))}</td>
             <td>${fmt(perf.cumulative_views_7d, 0)}</td>
-            <td>${fmt(perf.breakpoint_day, 0)}</td>
+            <td>${fmt(perf.initial_breakpoint_day ?? perf.breakpoint_day, 0)}</td>
             <td>${perf.long_tail_ratio === null ? "—" : pct(perf.long_tail_ratio)}</td>
           </tr>`;
         }).join("");
@@ -648,24 +677,95 @@ class ChannelReportRenderer:
 
         html += `<polyline points="${polyline}" fill="none" stroke="var(--series)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"></polyline>`;
 
-        const breakpointDay = selectedVideo.performance.breakpoint_day;
-        const breakpointPoint = breakpointDay === null
-          ? null
-          : points.find(
-              point => Number(point.elapsed_day) === Number(breakpointDay)
-            );
+        const breakpointDay = (
+          selectedVideo.performance.initial_breakpoint_day
+          ?? selectedVideo.performance.breakpoint_day
+        );
+        const reaccelerationPoints = selectedVideo.reacceleration_points || [];
+        const primaryReaccelerationDay = (
+          selectedVideo.performance.primary_reacceleration_day
+        );
+        const primaryPeakStrengthDay = (
+          selectedVideo.performance.primary_reacceleration_peak_strength_day
+        );
+        const postBreakPeakDay = selectedVideo.performance.post_break_peak_day;
 
         if (breakpointDay !== null && breakpointDay !== undefined) {
           const breakpointX = sx(breakpointDay);
           html += `<line class="breakpoint-line" x1="${breakpointX}" y1="${margin.top}" x2="${breakpointX}" y2="${margin.top + innerHeight}" stroke="var(--accent)" stroke-width="2" stroke-dasharray="7 5"></line>`;
-          html += `<text x="${Math.min(breakpointX + 7, width - 110)}" y="${margin.top + 14}" font-size="11" fill="var(--accent)">breakpoint: day ${fmt(breakpointDay, 0)}</text>`;
+          html += `<text x="${Math.min(breakpointX + 7, width - 120)}" y="${margin.top + 14}" font-size="11" fill="var(--accent)">初動終了: day ${fmt(breakpointDay, 0)}</text>`;
         }
 
-        points.forEach((point, index) => {
-          const isBreakpoint = breakpointPoint
-            && Number(point.elapsed_day) === Number(breakpointDay);
-          html += `<circle class="cumulative-point" data-index="${index}" cx="${sx(point.elapsed_day)}" cy="${sy(point.cumulative_views)}" r="${isBreakpoint ? 7 : 4}" fill="${isBreakpoint ? "var(--accent)" : "var(--series)"}" stroke="var(--card)" stroke-width="2" tabindex="0"></circle>`;
+        reaccelerationPoints.forEach(event => {
+          const x = sx(event.start_day);
+          const primary = (
+            Number(event.start_day) === Number(primaryReaccelerationDay)
+          );
+
+          html += `<line class="reacceleration-line" x1="${x}" y1="${margin.top}" x2="${x}" y2="${margin.top + innerHeight}" stroke="var(--series2)" stroke-width="${primary ? 2.5 : 1.5}" stroke-dasharray="3 5"></line>`;
+
+          if (primary) {
+            html += `<text x="${Math.min(x + 7, width - 135)}" y="${margin.top + 32}" font-size="11" fill="var(--series2)">再加速開始: day ${fmt(event.start_day, 0)}</text>`;
+          }
         });
+
+        points.forEach((point, index) => {
+          const reaccelerationStart = reaccelerationPoints.find(
+            event => Number(event.start_day) === Number(point.elapsed_day)
+          );
+          const isPrimaryStart = reaccelerationStart
+            && Number(reaccelerationStart.start_day)
+              === Number(primaryReaccelerationDay);
+          const radius = reaccelerationStart ? (isPrimaryStart ? 7 : 6) : 4;
+          const fill = reaccelerationStart
+            ? "var(--series2)"
+            : Number(point.elapsed_day) === Number(breakpointDay)
+              ? "var(--accent)"
+              : "var(--series)";
+
+          html += `<circle class="cumulative-point" data-index="${index}" cx="${sx(point.elapsed_day)}" cy="${sy(point.cumulative_views)}" r="${radius}" fill="${fill}" stroke="var(--card)" stroke-width="2" tabindex="0"></circle>`;
+        });
+
+        reaccelerationPoints.forEach(event => {
+          const point = points.find(
+            item => Number(item.elapsed_day) === Number(event.peak_strength_day)
+          );
+
+          if (!point) return;
+
+          const x = sx(point.elapsed_day);
+          const y = sy(point.cumulative_views);
+          const size = Number(event.peak_strength_day)
+            === Number(primaryPeakStrengthDay)
+            ? 8
+            : 6;
+          const diamond = [
+            `${x},${y-size}`,
+            `${x+size},${y}`,
+            `${x},${y+size}`,
+            `${x-size},${y}`
+          ].join(" ");
+
+          html += `<polygon class="acceleration-peak-marker" points="${diamond}" fill="var(--series2)" stroke="var(--card)" stroke-width="2" pointer-events="none"></polygon>`;
+
+          if (
+            Number(event.peak_strength_day)
+            === Number(primaryPeakStrengthDay)
+          ) {
+            html += `<text x="${Math.min(x + 7, width - 135)}" y="${margin.top + 50}" font-size="11" fill="var(--series2)">最大加速: day ${fmt(event.peak_strength_day, 0)}</text>`;
+          }
+        });
+
+        const postBreakPeakPoint = postBreakPeakDay === null
+          || postBreakPeakDay === undefined
+          ? null
+          : points.find(
+              point => Number(point.elapsed_day) === Number(postBreakPeakDay)
+            );
+
+        if (postBreakPeakPoint) {
+          html += `<circle class="post-break-peak-marker" cx="${sx(postBreakPeakPoint.elapsed_day)}" cy="${sy(postBreakPeakPoint.cumulative_views)}" r="10" fill="none" stroke="var(--text)" stroke-width="2" pointer-events="none"></circle>`;
+        }
 
         html += `<text x="${margin.left + innerWidth/2}" y="${height-8}" text-anchor="middle" font-size="12" fill="var(--muted)">経過日数</text>`;
         html += `<text x="16" y="${margin.top + innerHeight/2}" text-anchor="middle" font-size="12" fill="var(--muted)" transform="rotate(-90 16 ${margin.top + innerHeight/2})">累積視聴回数</text>`;
@@ -676,7 +776,49 @@ class ChannelReportRenderer:
           const point = points[Number(element.dataset.index)];
 
           const show = () => {
-            tooltip.innerHTML = `<strong>${escapeHtml(selectedVideo.title)}</strong><br>day ${fmt(point.elapsed_day, 0)}<br>日次視聴: ${fmt(point.daily_views, 0)}<br>累積視聴: ${fmt(point.cumulative_views, 0)}`;
+            const eventLines = [];
+            const startEvent = reaccelerationPoints.find(
+              event => Number(event.start_day) === Number(point.elapsed_day)
+            );
+            const peakEvent = reaccelerationPoints.find(
+              event => Number(event.peak_strength_day)
+                === Number(point.elapsed_day)
+            );
+
+            if (Number(point.elapsed_day) === Number(breakpointDay)) {
+              eventLines.push("<strong>初動終了点</strong>");
+            }
+
+            if (startEvent) {
+              const primary = Number(startEvent.start_day)
+                === Number(primaryReaccelerationDay);
+              eventLines.push(
+                `<strong>再加速開始${primary ? "（primary）" : ""}</strong>`
+              );
+              eventLines.push(
+                `最大加速: day ${fmt(startEvent.peak_strength_day, 0)}`
+              );
+            }
+
+            if (peakEvent) {
+              eventLines.push("<strong>最大加速点</strong>");
+              eventLines.push(
+                `傾き: ${fmt(peakEvent.slope_before, 2)} → ${fmt(peakEvent.slope_after, 2)}`
+              );
+              eventLines.push(
+                `strength: ${fmt(peakEvent.strength, 2)}`
+              );
+            }
+
+            if (Number(point.elapsed_day) === Number(postBreakPeakDay)) {
+              eventLines.push("<strong>post-break peak</strong>");
+            }
+
+            const eventHtml = eventLines.length
+              ? "<br>" + eventLines.join("<br>")
+              : "";
+
+            tooltip.innerHTML = `<strong>${escapeHtml(selectedVideo.title)}</strong><br>day ${fmt(point.elapsed_day, 0)}<br>日次視聴: ${fmt(point.daily_views, 0)}<br>累積視聴: ${fmt(point.cumulative_views, 0)}${eventHtml}`;
             tooltip.style.display = "block";
             tooltip.style.left = Math.min(
               Number(element.getAttribute("cx")) + 12,
@@ -772,7 +914,11 @@ class ChannelReportRenderer:
           ["動画ID", video.video_id],
           [target, fmt(targetValue(video))],
           ["7日視聴", fmt(video.performance.cumulative_views_7d, 0)],
-          ["breakpoint", fmt(video.performance.breakpoint_day, 0)],
+          ["初動終了", fmt(video.performance.initial_breakpoint_day ?? video.performance.breakpoint_day, 0)],
+          ["再加速回数", fmt(video.performance.reacceleration_count, 0)],
+          ["代表再加速開始", fmt(video.performance.primary_reacceleration_day, 0)],
+          ["最大加速", fmt(video.performance.primary_reacceleration_peak_strength_day, 0)],
+          ["Post-break peak", fmt(video.performance.post_break_peak_day, 0)],
           ["Long tail", video.performance.long_tail_ratio === null ? "—" : pct(video.performance.long_tail_ratio)],
           ["最大日次視聴", fmt(video.performance.max_views_per_day, 0)],
           ["タイトル長", fmt(video.features.length, 0)],

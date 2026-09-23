@@ -2,7 +2,8 @@
 
 from .breakpoint import BreakpointDetector
 from .dataset import DailyView, DailyViewSeries
-from .result import PerformanceResult
+from .reacceleration import ReaccelerationDetector
+from .result import PerformanceResult, ReaccelerationPoint
 
 
 class PerformanceAnalyzer:
@@ -16,11 +17,16 @@ class PerformanceAnalyzer:
 
   def __init__(
     self,
-    breakpoint_detector: BreakpointDetector | None = None
+    breakpoint_detector: BreakpointDetector | None = None,
+    reacceleration_detector: ReaccelerationDetector | None = None
   ) -> None:
     self._breakpoint_detector = (
       breakpoint_detector
       or BreakpointDetector()
+    )
+    self._reacceleration_detector = (
+      reacceleration_detector
+      or ReaccelerationDetector()
     )
 
   def analyze(
@@ -34,6 +40,13 @@ class PerformanceAnalyzer:
 
     breakpoint = self._breakpoint_detector.detect(
       daily_views
+    )
+    reacceleration_points = self._reacceleration_detector.detect(
+      daily_views=daily_views,
+      initial_breakpoint_day=breakpoint.breakpoint_day
+    )
+    primary_reacceleration = self._primary_reacceleration(
+      reacceleration_points
     )
 
     return PerformanceResult(
@@ -78,6 +91,29 @@ class PerformanceAnalyzer:
       post_break_peak_ratio=self._post_break_peak_ratio(
         daily_views,
         breakpoint.breakpoint_day
+      ),
+      initial_breakpoint_day=breakpoint.breakpoint_day,
+      reacceleration_points=tuple(reacceleration_points),
+      reacceleration_count=len(reacceleration_points),
+      primary_reacceleration_day=(
+        primary_reacceleration.start_day
+        if primary_reacceleration is not None
+        else None
+      ),
+      primary_reacceleration_views=(
+        primary_reacceleration.start_views
+        if primary_reacceleration is not None
+        else None
+      ),
+      primary_reacceleration_peak_strength_day=(
+        primary_reacceleration.peak_strength_day
+        if primary_reacceleration is not None
+        else None
+      ),
+      primary_reacceleration_strength=(
+        primary_reacceleration.strength
+        if primary_reacceleration is not None
+        else None
       ),
       cumulative_views_3d=self._cumulative_views(
         daily_views,
@@ -398,4 +434,19 @@ class PerformanceAnalyzer:
       daily_view.views
       for daily_view in daily_views
       if daily_view.day <= days
+    )
+
+  def _primary_reacceleration(
+    self,
+    points: list[ReaccelerationPoint]
+  ) -> ReaccelerationPoint | None:
+    if not points:
+      return None
+
+    return max(
+      points,
+      key=lambda point: (
+        point.strength,
+        -point.start_day
+      )
     )

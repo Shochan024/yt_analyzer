@@ -20,6 +20,7 @@ class ReportDataBuilder:
     "max_views_day",
     "max_views_per_day",
     "breakpoint_day",
+    "initial_breakpoint_day",
     "views_at_breakpoint",
     "pre_break_slope",
     "post_break_slope",
@@ -28,6 +29,11 @@ class ReportDataBuilder:
     "post_break_peak_day",
     "post_break_peak_views",
     "post_break_peak_ratio",
+    "reacceleration_count",
+    "primary_reacceleration_day",
+    "primary_reacceleration_views",
+    "primary_reacceleration_peak_strength_day",
+    "primary_reacceleration_strength",
     "cumulative_views_3d",
     "cumulative_views_7d",
     "cumulative_views_10d",
@@ -43,19 +49,24 @@ class ReportDataBuilder:
     performance_path: Path,
     long_analysis_path: Path,
     short_analysis_path: Path,
-    daily_metrics: dict[str, list[dict[str, int]]] | None = None
+    daily_metrics: dict[str, list[dict[str, int]]] | None = None,
+    reacceleration_path: Path | None = None
   ) -> dict[str, object]:
     title_rows = self._read_csv(title_features_path)
     performance_rows = {
       row["video_id"]: row
       for row in self._read_csv(performance_path)
     }
+    reacceleration_rows = self._read_reacceleration(
+      reacceleration_path
+    )
 
     videos = [
       self._video(
         row,
         performance_rows.get(row["video_id"]),
-        (daily_metrics or {}).get(row["video_id"], [])
+        (daily_metrics or {}).get(row["video_id"], []),
+        reacceleration_rows.get(row["video_id"], [])
       )
       for row in title_rows
     ]
@@ -76,7 +87,8 @@ class ReportDataBuilder:
     self,
     row: dict[str, str],
     performance: dict[str, str] | None,
-    daily_metrics: list[dict[str, int]]
+    daily_metrics: list[dict[str, int]],
+    reacceleration_points: list[dict[str, object]]
   ) -> dict[str, object]:
     return {
       "video_id": row["video_id"],
@@ -100,7 +112,8 @@ class ReportDataBuilder:
         else None
         for name in self.PERFORMANCE_FIELDS
       },
-      "daily_metrics": daily_metrics
+      "daily_metrics": daily_metrics,
+      "reacceleration_points": reacceleration_points
     }
 
   def _long_kpis(
@@ -199,6 +212,26 @@ class ReportDataBuilder:
       encoding="utf-8"
     ) as file:
       return json.load(file)
+
+  def _read_reacceleration(
+    self,
+    path: Path | None
+  ) -> dict[str, list[dict[str, object]]]:
+    if path is None or not path.exists():
+      return {}
+
+    with path.open(
+      "r",
+      encoding="utf-8"
+    ) as file:
+      rows = json.load(file)
+
+    return {
+      str(row["video_id"]): list(
+        row.get("reacceleration_points", [])
+      )
+      for row in rows
+    }
 
   def _require(self, path: Path) -> None:
     if not path.exists():

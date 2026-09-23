@@ -14,6 +14,7 @@ class PerformanceCsvWriter:
     "max_views_day",
     "max_views_per_day",
     "breakpoint_day",
+    "initial_breakpoint_day",
     "views_at_breakpoint",
     "pre_break_slope",
     "post_break_slope",
@@ -22,6 +23,11 @@ class PerformanceCsvWriter:
     "post_break_peak_day",
     "post_break_peak_views",
     "post_break_peak_ratio",
+    "reacceleration_count",
+    "primary_reacceleration_day",
+    "primary_reacceleration_views",
+    "primary_reacceleration_peak_strength_day",
+    "primary_reacceleration_strength",
     "cumulative_views_3d",
     "cumulative_views_7d",
     "cumulative_views_10d",
@@ -40,7 +46,10 @@ class PerformanceCsvWriter:
     path.parent.mkdir(parents=True, exist_ok=True)
 
     rows = [
-      asdict(record)
+      {
+        name: asdict(record).get(name)
+        for name in self.FIELD_NAMES
+      }
       for record in records
     ]
 
