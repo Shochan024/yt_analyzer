@@ -1,3 +1,4 @@
+import math
 import unittest
 
 from src.yt_analyzer.application.instagram_features_runner import (
@@ -62,6 +63,28 @@ class InstagramReportDataBuilderTest(unittest.TestCase):
     self.assertEqual(kpis["median_reach"], 200.0)
     self.assertAlmostEqual(kpis["median_engagement_rate"], 0.20)
     self.assertAlmostEqual(kpis["median_follow_rate"], 0.02)
+
+  def test_adds_log1p_metrics_for_report_visualization(self):
+    records = [
+      record("1", 99, 0.10, 0.01)
+    ]
+    analysis = InstagramAnalyzer().analyze(records)
+
+    data = InstagramReportDataBuilder().build(
+      records=records,
+      analysis=analysis
+    )
+
+    metrics = data["posts"][0]["metrics"]
+
+    self.assertAlmostEqual(
+      metrics["log1p_reach"],
+      math.log(100)
+    )
+    self.assertAlmostEqual(
+      metrics["log1p_views"],
+      math.log(100)
+    )
 
 
 if __name__ == "__main__":
