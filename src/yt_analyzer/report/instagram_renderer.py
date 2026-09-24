@@ -217,7 +217,7 @@ class InstagramReportRenderer:
     </section>
 
     <div class="note">
-      Rate 指標は Reach を分母にしています。相関・回帰は因果関係を意味しません。小標本、とくに Reel は結果の不確実性に注意してください。
+      Rate 指標は Reach を分母にしています。件数指標では raw と log1p を切り替えられます。相関・回帰は因果関係を意味しません。小標本、とくに Reel は結果の不確実性に注意してください。
     </div>
   </main>
 
@@ -236,12 +236,19 @@ class InstagramReportRenderer:
       };
       const targetLabels = {
         views: "Views",
+        log1p_views: "Views (log1p)",
         reach: "Reach",
+        log1p_reach: "Reach (log1p)",
         likes: "Likes",
+        log1p_likes: "Likes (log1p)",
         shares: "Shares",
+        log1p_shares: "Shares (log1p)",
         follows: "Follows",
+        log1p_follows: "Follows (log1p)",
         comments: "Comments",
+        log1p_comments: "Comments (log1p)",
         saves: "Saves",
+        log1p_saves: "Saves (log1p)",
         like_rate: "Like Rate",
         share_rate: "Share Rate",
         follow_rate: "Follow Rate",
