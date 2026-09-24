@@ -1,12 +1,14 @@
 import csv
 from datetime import datetime
 from pathlib import Path
+from typing import ClassVar
+from zoneinfo import ZoneInfo
 
 from ..instagram.model import InstagramPostRecord, InstagramPostType
 
 
 class InstagramCsvReader:
-  POST_TYPES = {
+  POST_TYPES: ClassVar[dict[str, InstagramPostType]] = {
     "Instagram画像": InstagramPostType.IMAGE,
     "Instagramカルーセル": InstagramPostType.CAROUSEL,
     "IGリール動画": InstagramPostType.REEL
@@ -57,6 +59,8 @@ class InstagramCsvReader:
       published_at=datetime.strptime(
         self._text(row.get("公開時間")),
         "%m/%d/%Y %H:%M"
+      ).replace(
+        tzinfo=ZoneInfo("Asia/Tokyo")
       ),
       link=self._optional_text(row.get("リンク")),
       duration_seconds=self._integer(row.get("時間(秒)")),
