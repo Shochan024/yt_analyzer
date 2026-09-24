@@ -1,3 +1,4 @@
+import math
 import unittest
 
 from src.yt_analyzer.application.instagram_features_runner import (
@@ -65,6 +66,24 @@ class InstagramAnalyzerTest(unittest.TestCase):
     )
     self.assertIsNone(
       reel.correlations["reach"]["length"].pearson
+    )
+
+  def test_analyzes_log1p_count_targets(self):
+    results = InstagramAnalyzer().analyze([
+      record("1", 1, 0, "image"),
+      record("2", 2, 9, "image"),
+      record("3", 3, 99, "image")
+    ])
+
+    regression = results["image"].regressions[
+      "log1p_reach"
+    ]["length"]
+
+    expected_slope = math.log(10)
+
+    self.assertAlmostEqual(
+      regression.coefficient,
+      expected_slope
     )
 
 
