@@ -1,3 +1,4 @@
+import math
 from dataclasses import dataclass
 
 from ..analysis.correlation import CorrelationAnalyzer
@@ -23,14 +24,31 @@ class InstagramAnalyzer:
     "unigram_cross_entropy"
   )
 
+  LOG1P_TARGETS = {
+    "log1p_views": "views",
+    "log1p_reach": "reach",
+    "log1p_likes": "likes",
+    "log1p_shares": "shares",
+    "log1p_follows": "follows",
+    "log1p_comments": "comments",
+    "log1p_saves": "saves"
+  }
+
   TARGET_NAMES = (
     "views",
+    "log1p_views",
     "reach",
+    "log1p_reach",
     "likes",
+    "log1p_likes",
     "shares",
+    "log1p_shares",
     "follows",
+    "log1p_follows",
     "comments",
+    "log1p_comments",
     "saves",
+    "log1p_saves",
     "like_rate",
     "share_rate",
     "follow_rate",
@@ -114,7 +132,10 @@ class InstagramAnalyzer:
     y = []
 
     for record in records:
-      target_value = getattr(record, target_name)
+      target_value = self._target_value(
+        record,
+        target_name
+      )
 
       if target_value is None:
         continue
@@ -125,3 +146,20 @@ class InstagramAnalyzer:
       y.append(float(target_value))
 
     return x, y
+
+  def _target_value(
+    self,
+    record: InstagramFeatureRecord,
+    target_name: str
+  ) -> float | int | None:
+    raw_target_name = self.LOG1P_TARGETS.get(target_name)
+
+    if raw_target_name is None:
+      return getattr(record, target_name)
+
+    raw_value = getattr(record, raw_target_name)
+
+    if raw_value is None or raw_value < 0:
+      return None
+
+    return math.log1p(raw_value)
