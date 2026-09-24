@@ -2,6 +2,12 @@
 
 from invoke import Collection, task
 
+from src.yt_analyzer.application.instagram_pipeline_command import (
+  run_instagram_pipeline,
+)
+from src.yt_analyzer.application.instagram_report_command import (
+  run_instagram_report,
+)
 from src.yt_analyzer.application.performance_metrics_command import (
   run_performance_metrics,
 )
@@ -58,6 +64,22 @@ def report_channel(c):
   print(f"Written: {output_path}")
 
 
+@task(name="pipeline")
+def instagram_pipeline(c, csv_path):
+  output_path = run_instagram_pipeline(
+    csv_path=csv_path
+  )
+  print(f"Written: {output_path}")
+
+
+@task(name="report")
+def instagram_report(c, csv_path):
+  output_path = run_instagram_report(
+    csv_path=csv_path
+  )
+  print(f"Written: {output_path}")
+
+
 title = Collection("title")
 title.add_task(features)
 
@@ -74,6 +96,10 @@ pipeline.add_task(pipeline_all)
 report = Collection("report")
 report.add_task(report_channel)
 
+instagram = Collection("instagram")
+instagram.add_task(instagram_pipeline)
+instagram.add_task(instagram_report)
+
 ns = Collection()
 ns.add_task(test)
 ns.add_collection(title)
@@ -81,3 +107,4 @@ ns.add_collection(performance)
 ns.add_collection(statistics)
 ns.add_collection(pipeline)
 ns.add_collection(report)
+ns.add_collection(instagram)
