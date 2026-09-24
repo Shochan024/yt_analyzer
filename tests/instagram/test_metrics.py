@@ -1,5 +1,6 @@
 import unittest
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from src.yt_analyzer.instagram.metrics import InstagramMetricsCalculator
 from src.yt_analyzer.instagram.model import InstagramPostRecord, InstagramPostType
@@ -11,7 +12,14 @@ class InstagramMetricsCalculatorTest(unittest.TestCase):
       post_id="1",
       caption="caption",
       post_type=InstagramPostType.REEL,
-      published_at=datetime(2026, 9, 22, 23, 48),
+      published_at=datetime(
+        2026,
+        9,
+        22,
+        23,
+        48,
+        tzinfo=ZoneInfo("Asia/Tokyo")
+      ),
       link=None,
       duration_seconds=38,
       views=1000,
@@ -37,7 +45,14 @@ class InstagramMetricsCalculatorTest(unittest.TestCase):
       post_id="1",
       caption="caption",
       post_type=InstagramPostType.IMAGE,
-      published_at=datetime(2026, 9, 22, 23, 48),
+      published_at=datetime(
+        2026,
+        9,
+        22,
+        23,
+        48,
+        tzinfo=ZoneInfo("Asia/Tokyo")
+      ),
       link=None,
       duration_seconds=None,
       views=0,
