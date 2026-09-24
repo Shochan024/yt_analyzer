@@ -424,6 +424,29 @@ class InstagramReportRenderer:
           html += `<text x="${margin.left-9}" y="${y+4}" text-anchor="end" font-size="11" fill="var(--muted)">${rateTargets.has(tName) ? pct(value) : fmt(value, 1)}</text>`;
         }
 
+        const { regression } = currentStats();
+        const observedXMin = Math.min(
+          ...points.map(point => Number(point.x))
+        );
+        const observedXMax = Math.max(
+          ...points.map(point => Number(point.x))
+        );
+
+        if (
+          regression?.coefficient !== null
+          && regression?.coefficient !== undefined
+          && regression?.intercept !== null
+          && regression?.intercept !== undefined
+          && observedXMin !== observedXMax
+        ) {
+          const y1 = Number(regression.intercept)
+            + Number(regression.coefficient) * observedXMin;
+          const y2 = Number(regression.intercept)
+            + Number(regression.coefficient) * observedXMax;
+
+          html += `<line class="regression-line" x1="${sx(observedXMin)}" y1="${sy(y1)}" x2="${sx(observedXMax)}" y2="${sy(y2)}" stroke="var(--accent)" stroke-width="2" stroke-dasharray="7 5"></line>`;
+        }
+
         points.forEach((point, index) => {
           html += `<circle class="scatter-point" data-index="${index}" cx="${sx(point.x)}" cy="${sy(point.y)}" r="6" fill="var(--series)" stroke="var(--card)" stroke-width="2" tabindex="0"></circle>`;
         });
