@@ -1,3 +1,4 @@
+import math
 from dataclasses import asdict
 from statistics import median
 
@@ -51,12 +52,19 @@ class InstagramReportDataBuilder:
       },
       "metrics": {
         "views": record.views,
+        "log1p_views": self._log1p(record.views),
         "reach": record.reach,
+        "log1p_reach": self._log1p(record.reach),
         "likes": record.likes,
+        "log1p_likes": self._log1p(record.likes),
         "shares": record.shares,
+        "log1p_shares": self._log1p(record.shares),
         "follows": record.follows,
+        "log1p_follows": self._log1p(record.follows),
         "comments": record.comments,
+        "log1p_comments": self._log1p(record.comments),
         "saves": record.saves,
+        "log1p_saves": self._log1p(record.saves),
         "like_rate": record.like_rate,
         "share_rate": record.share_rate,
         "follow_rate": record.follow_rate,
@@ -108,3 +116,9 @@ class InstagramReportDataBuilder:
       return None
 
     return float(median(present))
+
+  def _log1p(self, value: int | None) -> float | None:
+    if value is None or value < 0:
+      return None
+
+    return math.log1p(value)
